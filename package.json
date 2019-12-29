@@ -1,0 +1,24 @@
+{
+  "name": "react_annoations",
+  "version": "1.0.0",
+  "description": "annotates react statments with flow like annotations (eg. '//@state' //@useEffect)  providing for shorter code on development",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "build": "npx babel src --out-dir out"
+  },
+  "keywords": [
+    "@state",
+    "@useEffect"
+  ],
+  "author": "Eniola ifeoluwa olatunji",
+  "license": "ISC",
+  "devDependencies": {
+    "@babel/cli": "^7.7.7",
+    "@babel/core": "^7.7.7",
+    "@babel/plugin-syntax-jsx": "^7.2.0",
+    "@babel/preset-env": "^7.7.7",
+    "@babel/preset-react": "^7.7.0",
+    "babylon": "^6.18.0"
+  }
+}
