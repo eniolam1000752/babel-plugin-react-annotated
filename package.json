@@ -5,11 +5,14 @@
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "build": "npx babel src --out-dir out"
+    "build": "npx babel ./test/src --out-dir ./test/out",
+    "config-init": " cd init && node init_to_webpack.js && cd ../"
   },
   "keywords": [
     "@state",
-    "@useEffect"
+    "@init",
+    "@consumer",
+    "@provider"
   ],
   "author": "Eniola ifeoluwa olatunji",
   "license": "ISC",

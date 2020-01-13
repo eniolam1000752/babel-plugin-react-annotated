@@ -1,6 +1,6 @@
-const transverse = require("@babel/traverse");
+// const transverse = require("@babel/traverse");
 const types = require("@babel/types");
-const babelTemplate = require("@babel/template");
+const template = require("@babel/template").default;
 
 const stateAnnotation = /^\s*@state\s*$/;
 const setStatePrefix = "SET";
@@ -9,14 +9,13 @@ const DUMMY_NAME = `_RN_${genVar()}`;
 let annotatedStateList = [];
 let stateNames = [];
 let visitors = {};
-const template = babelTemplate.default;
 
 const _useStateTemplate = function(initValueNode, idText) {
-  let leftExpression = types.arrayPattern([
+  const leftExpression = types.arrayPattern([
     types.identifier(idText),
     types.identifier(`${setStatePrefix}${idText}`)
   ]);
-  let RightExpression = types.callExpression(
+  const RightExpression = types.callExpression(
     types.memberExpression(
       types.identifier("React"),
       types.identifier("useState")
@@ -36,15 +35,30 @@ const _updateExpressionTemplate = function(updateNode, trueVarName) {
   });
 };
 
-const _updateExpressionTemplate2 = function(
+const _updateExpressionTemplate2 = (
   dummyVar,
   updateNode,
   nestNode,
-  trueVarName
-) {
+  trueVar
+) => {
+  const isLeftMemberExp = types.isMemberExpression(trueVar);
+  // const clonedLeft = types.cloneNode(updateNode);
+  // const leftExpClone = types.cloneNode(trueVar);
   const buildASTNode = template(
-    `${setStatePrefix}${trueVarName}(STATE_NAME => {UPDATE_EXP;NEST_STATE_NODE ;return STATE_NAME})`
+    `${setStatePrefix}${trueVar.name ||
+      getMemberExpStateName(
+        trueVar
+      )}(STATE_NAME => {UPDATE_EXP;NEST_STATE_NODE ;return STATE_NAME})`
   );
+
+  if (isLeftMemberExp) {
+    replaceStateWithDummyInMemberExp(updateNode.left, dummyVar);
+  } else {
+    if (types.isIdentifier(updateNode.left)) {
+      updateNode.left.name = dummyVar;
+    }
+  }
+
   return buildASTNode({
     UPDATE_EXP: updateNode,
     NEST_STATE_NODE: nestNode,
@@ -64,6 +78,9 @@ const _nestedUpdateExpTemplate = function(
   const isNextLeftMemberExp = types.isMemberExpression(
     leftNodeOfNextAssignment
   );
+  const nextAssignLeft =
+    leftNodeOfNextAssignment.name ||
+    getMemberExpStateName(leftNodeOfNextAssignment);
   const leftExpClone = types.cloneNode(trueVar);
   const buildASTNode = !isLeftMemberExp
     ? template(
@@ -75,13 +92,21 @@ const _nestedUpdateExpTemplate = function(
         )}(STATE_NAME => {LEFT_EXP  = HIGH_STATE_NAME; NEST_STATE_NODE ;return STATE_NAME})`
       );
 
-  if (isNextLeftMemberExp)
+  if (isNextLeftMemberExp && stateNames.indexOf(nextAssignLeft) !== -1) {
     replaceStateWithDummyInMemberExp(leftNodeOfNextAssignment, higerStateName);
+  }
+  // console.log(
+  //   "nest setstate builder: ",
+  //   trueVar,
+  //   leftNodeOfNextAssignment,
+  //   nextAssignLeft
+  // );
 
+  const temp = !isNextLeftMemberExp ? higerStateName : leftNodeOfNextAssignment;
+  const temp2 =
+    stateNames.indexOf(nextAssignLeft) === -1 ? leftNodeOfNextAssignment : temp;
   let out = {
-    HIGH_STATE_NAME: !isNextLeftMemberExp
-      ? higerStateName
-      : leftNodeOfNextAssignment,
+    HIGH_STATE_NAME: temp2,
     NEST_STATE_NODE: nestNode,
     STATE_NAME: dummyVar
   };
@@ -89,18 +114,53 @@ const _nestedUpdateExpTemplate = function(
   return buildASTNode(
     !isLeftMemberExp ? out : { ...out, LEFT_EXP: leftExpClone }
   );
-  // console.log("transformed output oooo: ", nestNode, outlet);
-  // return outlet;
 };
 
-const assignmentTemplate = function(leftNode, rightNode) {
-  const isLeftMemberExp = types.isMemberExpression(leftNode);
+const assignmentTemplate = function(leftNode, rightNode, LONA, node) {
+  // const isLeftMemberExp = types.isMemberExpression(leftNode);
+  const leftNodeOfNextAssignment = LONA ? types.cloneNode(LONA) : null;
+  const isNextLeftMemberExp = LONA
+    ? types.isMemberExpression(leftNodeOfNextAssignment)
+    : null;
   const buildAstNode = template(`VAR_NAME = RIGHT_NODE`);
-  let out = {
-    VAR_NAME: leftNode.name,
-    RIGHT_NODE: rightNode
+  const varInExp = LONA
+    ? leftNodeOfNextAssignment.name ||
+      getMemberExpStateName(leftNodeOfNextAssignment)
+    : null;
+
+  // console.log(
+  //   "test oooo: ",
+  //   isNextLeftMemberExp && stateNames.indexOf(varInExp) !== -1,
+  //   varInExp
+  // );
+  if (LONA) {
+    if (LONA && isNextLeftMemberExp && stateNames.indexOf(varInExp) !== -1) {
+      replaceStateWithDummyInMemberExp(leftNodeOfNextAssignment, rightNode);
+    } else {
+      rightNode =
+        stateNames.indexOf(varInExp) === -1
+          ? leftNodeOfNextAssignment.name
+          : rightNode;
+    }
+  }
+  const out = {
+    VAR_NAME: leftNode,
+    RIGHT_NODE: LONA
+      ? !isNextLeftMemberExp
+        ? rightNode
+        : leftNodeOfNextAssignment
+      : rightNode
   };
-  return buildAstNode(!isLeftMemberExp ? out : { ...out, VAR_NAME: leftNode });
+
+  if (node && node.operator !== "=") {
+    return types.assignmentExpression(
+      node.operator,
+      leftNode,
+      types.identifier(out.RIGHT_NODE)
+    );
+  } else {
+    return buildAstNode(out);
+  }
 };
 
 const getMemberExpStateName = function(memberExp) {
@@ -116,13 +176,13 @@ const getMemberExpStateName = function(memberExp) {
   return out;
 };
 
-const declearedStateTransform = function(programNode) {
-  annotatedStateList.forEach(item =>
-    transverse(programNode, reactStateExpressionFinder, null, {
-      varName: item.id.name
-    })
-  );
-};
+// const declearedStateTransform = function(programNode) {
+//   annotatedStateList.forEach(item =>
+//     transverse(programNode, reactStateExpressionFinder, null, {
+//       varName: item.id.name
+//     })
+//   );
+// };
 
 const transformer = function(node, type) {
   switch (type) {
@@ -166,7 +226,7 @@ function genVar() {
   return randVar.slice(2, randVar.length - 9);
 }
 
-const exceptionMsg = function(type, data, errType = null) {};
+// const exceptionMsg = function(type, data, errType = null) {};
 
 const addVisitor = function(visitor) {
   Object.assign(visitors, visitor);
@@ -249,45 +309,56 @@ const expressionVisistor = {
               : !resultAssignNode
               ? assignmentTemplate(
                   assignNode.left,
-                  (higherState = `_RN_${genVar()}`)
+                  (higherState = `_RN_${genVar()}`),
+                  assignNode.right.left
                 )
               : !resultAssignNode.length
               ? [
-                  assignmentTemplate(assignNode.left, higherState),
+                  assignmentTemplate(
+                    assignNode.left,
+                    higherState,
+                    assignNode.right.left
+                  ),
                   resultAssignNode
                 ]
               : [
-                  assignmentTemplate(assignNode.left, higherState),
+                  assignmentTemplate(
+                    assignNode.left,
+                    higherState,
+                    assignNode.right.left
+                  ),
                   ...resultAssignNode
                 ];
           // console.log("result exp: ", types.cloneNode(resultAssignNode));
           reculsive(assignNode.right);
         } else {
           if (resultAssignNode) {
-            const leftName = assignNode.left.name.slice();
+            let higherStateNode = types.cloneNode(assignNode.left);
             const leftNode = types.cloneNode(assignNode.left);
-            const higherStateNode = types.cloneNode(assignNode.left);
-            higherStateNode.name = higherState;
-            assignNode.left.name = higherState;
+            const varInExp = leftNode.name || getMemberExpStateName(leftNode);
+
+            higherStateNode = types.identifier(higherState);
+            // assignNode.left = types.identifier(higherState);
+
             // console.log("result2: ", resultAssignNode);
 
             resultAssignNode =
-              stateNames.indexOf(leftName) !== -1
+              stateNames.indexOf(varInExp) !== -1
                 ? _updateExpressionTemplate2(
                     higherState,
                     assignNode,
                     resultAssignNode,
-                    leftName
+                    leftNode
                   )
                 : !resultAssignNode.length
                 ? [
                     assignmentTemplate(higherStateNode, assignNode.right),
-                    assignmentTemplate(leftNode, higherState),
+                    assignmentTemplate(leftNode, higherState, null, assignNode),
                     resultAssignNode
                   ]
                 : [
                     assignmentTemplate(higherStateNode, assignNode.right),
-                    assignmentTemplate(leftNode, higherState),
+                    assignmentTemplate(leftNode, higherState, null, assignNode),
                     ...resultAssignNode
                   ];
           }
@@ -364,6 +435,7 @@ const stateCollector = function(declearNode) {
 
 const trasfromDeclearationsToUseState = function(node, declearNode) {
   node.declarations.push(transformer(declearNode, "toUseState"));
+  ``;
 };
 
 const replaceStateWithDummyInMemberExp = (memberExp, dummyVar) => {
