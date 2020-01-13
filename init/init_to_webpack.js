@@ -1,7 +1,7 @@
 const fs = require("fs");
 
-const url = "mock_webpack.config.js";
-const transfromPath = "@babel/custom-babel-plugin/react-annotation";
+const webPackConfigPath = "mock_webpack.config.js";
+const transfromPath = "react-annotation"; //@babel/custom-babel-plugin/react-annotation
 const replacementConfig = `
             //added by init generator during post install
             /* this loader enables the use of annatations for react states removing the need for setState
@@ -27,10 +27,10 @@ const replacementConfig = `
 
 const runScripts = () => {
   try {
-    const data = fs.readFileSync(url).toString();
+    const data = fs.readFileSync(webPackConfigPath).toString();
     if (data.indexOf(replacementConfig) === -1) {
       fs.writeFileSync(
-        url,
+        webPackConfigPath,
         data.replace(/oneOf:\s*\[/g, "oneOf: [" + replacementConfig)
       );
     }
