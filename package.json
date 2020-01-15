@@ -1,6 +1,8 @@
 {
   "name": "babel-plugin-react-annotated",
+  "repository": "eniolam1000752/babel-plugin-react-annotated",
   "version": "1.0.3",
+  "license": "MIT",
   "description": "annotates react statments with flow like annotations (eg. '//@state' //@useEffect)  providing for shorter code on development",
   "main": "index.js",
   "scripts": {
@@ -8,9 +10,6 @@
     "build": "npx babel ./test/src --out-dir ./test/out",
     "config-init": " cd init && node init_to_webpack.js && cd ../",
     "postinstall": "node init_to_webpack"
-  },
-  "publishConfig": {
-    "registry": "https://github.com/eniolam1000752/babel-plugin-react-annotated"
   },
   "keywords": [
     "@state",
