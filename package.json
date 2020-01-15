@@ -1,6 +1,6 @@
 {
   "name": "babel-plugin-react-annotated",
-  "version": "1.0.2",
+  "version": "1.0.3",
   "description": "annotates react statments with flow like annotations (eg. '//@state' //@useEffect)  providing for shorter code on development",
   "main": "index.js",
   "scripts": {
