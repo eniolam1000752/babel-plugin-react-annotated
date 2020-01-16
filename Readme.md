@@ -9,7 +9,7 @@ A simple '@' annotation prefixed single line comment that cuts down time wasted 
 const [count, setCount] = React.useState(0);
 
 /* variable usage and setter */
-const component = () => (
+const Component = () => (
   <div onClick={() => setCount(count + 1)}>Counting Number: {count}</div>
 );
 ```
@@ -23,7 +23,7 @@ const component = () => (
 let __count = 0;
 
 /* variable usage */
-const component = () => (
+const Component = () => (
   <div
     onClick={function() {
       ++__count;
@@ -51,7 +51,7 @@ const [__variable, _SET__variable] = React.useState("a word");
 ## Installation
 
 ```batch
-    npm install --save-dev react-annotated
+    npm install --save-dev babel-plugin-react-annotated
 ```
 
 ## Available annotations
@@ -95,7 +95,7 @@ let __varable = 0;
 //@state
 let __variable = 0;
 
-const component = props => {
+const Component = props => {
   return <div>{__variable} </div>;
 };
 
@@ -118,7 +118,7 @@ This can either be
 //@state
 let __variable = 0;
 
-const component = props => (
+const Component = props => (
   <div
     onClick={function() {
       ++__variable;
@@ -135,7 +135,7 @@ const component = props => (
 //@state
 let __variable = 0;
 
-const component = props => (
+const Component = props => (
   <div
     onClick={() => {
       __variable = "new value as string";
@@ -154,7 +154,7 @@ let __variable = 0,
   __variable2 = 3;
 let nonState = 5;
 
-const component = props => (
+const Component = props => (
   <div
     onClick={() => {
       __variable = __variable2 = ++nonState;

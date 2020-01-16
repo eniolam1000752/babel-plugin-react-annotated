@@ -1,6 +1,6 @@
 import React, { Fragment } from "react";
 
-const testComponent = () => {
+const usTestComponent = () => {
   //@state
   const __state1 = 3,
     __state2 = {},

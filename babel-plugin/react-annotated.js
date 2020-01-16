@@ -231,6 +231,32 @@ function genVar() {
 const addVisitor = function(visitor) {
   Object.assign(visitors, visitor);
 };
+const isParentReactElement = function(nodePath) {
+  let parentNode = nodePath.parentPath.parent;
+  if (
+    types.isFunctionDeclaration(parentNode) ||
+    types.isArrowFunctionExpression(parentNode)
+  ) {
+    if (types.isFunctionDeclaration(parentNode)) {
+      const funcFirstLetter = (parentNode.id.name || "r")[0]; // r is just a dummy variable that results to false
+      return funcFirstLetter.toUpperCase() === funcFirstLetter ||
+        /^use/.test(parentNode.id.name)
+        ? true
+        : false;
+    }
+    if (types.isArrowFunctionExpression(parentNode)) {
+      parentNode = nodePath.parentPath.parentPath.parent;
+      const funcFirstLetter = (parentNode.id.name || "r")[0];
+      return funcFirstLetter.toUpperCase() === funcFirstLetter ||
+        /^use/.test(parentNode.id.name)
+        ? true
+        : false;
+    }
+  } else {
+    return false;
+  }
+  return false;
+};
 
 const declarationVisitor = {
   VariableDeclaration(path) {
@@ -248,6 +274,12 @@ const declarationVisitor = {
     }
     if (!stateAnnotation.test(immidateTopComment.value)) {
       check__PrefixSyntax(node);
+      return 0;
+    }
+    if (!isParentReactElement(path)) {
+      throw new SyntaxError(
+        `Error in build: state should be defined within a react element either a class or function`
+      );
     } else {
       checkAnnotatedSyntax(node);
       cleanUpAnnotations(node);
