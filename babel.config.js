@@ -1,11 +1,27 @@
-module.exports = function(api) {
-  api.cache(false);
+const env = "test";
 
-  const presets = [["@babel/preset-react"]];
-  const plugins = [["./babel-plugin/react-annotated", {}]];
+if (env === "test") {
+  module.exports = function(api) {
+    api.cache(false);
 
-  return {
-    presets,
-    plugins
+    const presets = [["@babel/preset-react"]];
+    const plugins = [["./babel-plugin/react-annotated", {}]];
+
+    return {
+      presets,
+      plugins
+    };
   };
-};
+} else {
+  module.exports = function(api) {
+    api.cache(false);
+
+    const presets = [["@babel/preset-env"]];
+    const plugins = [];
+
+    return {
+      presets,
+      plugins
+    };
+  };
+}

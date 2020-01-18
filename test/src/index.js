@@ -1,6 +1,6 @@
 import React, { Fragment } from "react";
 
-const usTestComponent = () => {
+const useTestComponent = () => {
   //@state
   const __state1 = 3,
     __state2 = {},
@@ -22,8 +22,9 @@ const usTestComponent = () => {
             // __testState.data = __state2[
             //   "eniola"
             // ] = __state1 = val1.data[0] = val2[0] = value.person.name[0] = val[0]++;
-            __state3[0].number = ++state3;
-            __state2 = __state3 = "r";
+            // __state3[0].number = ++__state3;
+            // __state2 = __state3 = ++__state1;
+            ++__state1;
           }}
         >
           {/* {__status}, {__testState.data},{__state3[6]} */}

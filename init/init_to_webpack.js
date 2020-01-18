@@ -3,7 +3,7 @@ const fs = require("fs");
 const webPackConfigPath = "mock_webpack.config.js";
 const transfromPath = "react-annotation"; //@babel/custom-babel-plugin/react-annotation
 const replacementConfig = `
-            //added by init generator during post install
+            //added by react-annotated init generator during post install
             /* this loader enables the use of annatations for react states removing the need for setState
             * on dev
             */
@@ -25,7 +25,7 @@ const replacementConfig = `
               }
             },`;
 
-const runScripts = () => {
+const runScript = () => {
   try {
     const data = fs.readFileSync(webPackConfigPath).toString();
     if (data.indexOf(replacementConfig) === -1) {
@@ -37,10 +37,10 @@ const runScripts = () => {
   } catch (exp) {
     console.log(
       new Error(
-        "This is not a react project or the webpack.config file provided under the react script is in a different location"
+        "This is not a react project or the webpack.config file provided under the react script is in a different path"
       )
     );
   }
 };
 
-runScripts();
+runScript();
