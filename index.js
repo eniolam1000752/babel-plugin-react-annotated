@@ -176,13 +176,29 @@ const getMemberExpStateName = function(memberExp) {
   return out;
 };
 
-// const declearedStateTransform = function(programNode) {
-//   annotatedStateList.forEach(item =>
-//     transverse(programNode, reactStateExpressionFinder, null, {
-//       varName: item.id.name
-//     })
-//   );
-// };
+const _stateWithReturnTemplate = function(equivNodeRight, name) {
+  const setStateNode = template(
+    `${setStatePrefix}${name}( _var_1234 => (NODE_EQUIV) )`
+  );
+  const declare1 = types.variableDeclaration("let", [
+    types.variableDeclarator(
+      types.identifier("_var_1234"),
+      types.identifier(name)
+    )
+  ]);
+  const declare2 = setStateNode({
+    NODE_EQUIV: equivNodeRight
+  });
+  const declare3 = types.returnStatement(equivNodeRight);
+  const block = types.blockStatement([declare1, declare2, declare3]);
+  const arrowFunc = types.arrowFunctionExpression([], block);
+
+  return types.callExpression(arrowFunc, []);
+};
+
+const isNodeReactState = function(node) {
+  return stateNames.indexOf(node.name || getMemberExpStateName(node)) !== -1;
+};
 
 const transformer = function(node, type) {
   switch (type) {
@@ -231,6 +247,32 @@ function genVar() {
 const addVisitor = function(visitor) {
   Object.assign(visitors, visitor);
 };
+const isParentReactElement = function(nodePath) {
+  let parentNode = nodePath.parentPath.parent;
+  if (
+    types.isFunctionDeclaration(parentNode) ||
+    types.isArrowFunctionExpression(parentNode)
+  ) {
+    if (types.isFunctionDeclaration(parentNode)) {
+      const funcFirstLetter = (parentNode.id.name || "r")[0]; // r is just a dummy variable that results to false
+      return funcFirstLetter.toUpperCase() === funcFirstLetter ||
+        /^use/.test(parentNode.id.name)
+        ? true
+        : false;
+    }
+    if (types.isArrowFunctionExpression(parentNode)) {
+      parentNode = nodePath.parentPath.parentPath.parent;
+      const funcFirstLetter = (parentNode.id.name || "r")[0];
+      return funcFirstLetter.toUpperCase() === funcFirstLetter ||
+        /^use/.test(parentNode.id.name)
+        ? true
+        : false;
+    }
+  } else {
+    return false;
+  }
+  return false;
+};
 
 const declarationVisitor = {
   VariableDeclaration(path) {
@@ -248,6 +290,12 @@ const declarationVisitor = {
     }
     if (!stateAnnotation.test(immidateTopComment.value)) {
       check__PrefixSyntax(node);
+      return 0;
+    }
+    if (!isParentReactElement(path)) {
+      throw new SyntaxError(
+        `Error in build: state should be defined within a functional react element`
+      );
     } else {
       checkAnnotatedSyntax(node);
       cleanUpAnnotations(node);
@@ -259,11 +307,13 @@ const expressionVisistor = {
   AssignmentExpression(path) {
     let node = path.node;
     this.varName =
-      stateNames.indexOf(node.left.name) !== -1 ? node.left.name : null;
+      stateNames.indexOf(node.left.name || getMemberExpStateName(node.left)) !==
+      -1
+        ? node.left.name || getMemberExpStateName(node.left)
+        : null;
 
     // checks and performs transform on single assginments
     if (this.varName && !types.isAssignmentExpression(node.right)) {
-      // console.log("found a state assignment: ", path);
       path.traverse(
         {
           Identifier(path) {
@@ -274,6 +324,23 @@ const expressionVisistor = {
         },
         { varName: this.varName }
       );
+
+      if (
+        types.isUpdateExpression(node.right) &&
+        isNodeReactState(node.right.argument)
+      ) {
+        const args = types.cloneNode(node.right).argument;
+        const name = args.name || getMemberExpStateName(args);
+        if (types.isMemberExpression(node.right.argument)) {
+          replaceStateWithDummyInMemberExp(node.right.argument, "_var_1234");
+        } else if (types.isIdentifier(node.right.argument)) {
+          node.right.argument.name = "_var_1234";
+        }
+        node.right = _stateWithReturnTemplate(
+          types.cloneNode(node.right),
+          name
+        );
+      }
       path.replaceWith(_updateExpressionTemplate(node, this.varName));
     }
 
@@ -338,9 +405,26 @@ const expressionVisistor = {
             const varInExp = leftNode.name || getMemberExpStateName(leftNode);
 
             higherStateNode = types.identifier(higherState);
-            // assignNode.left = types.identifier(higherState);
 
-            // console.log("result2: ", resultAssignNode);
+            if (
+              types.isUpdateExpression(assignNode.right) &&
+              isNodeReactState(assignNode.right.argument)
+            ) {
+              const args = types.cloneNode(assignNode.right).argument;
+              const name = args.name || getMemberExpStateName(args);
+              if (types.isMemberExpression(assignNode.right.argument)) {
+                replaceStateWithDummyInMemberExp(
+                  assignNode.right.argument,
+                  "_var_1234"
+                );
+              } else if (types.isIdentifier(assignNode.right.argument)) {
+                assignNode.right.argument.name = "_var_1234";
+              }
+              assignNode.right = _stateWithReturnTemplate(
+                types.cloneNode(assignNode.right),
+                name
+              );
+            }
 
             resultAssignNode =
               stateNames.indexOf(varInExp) !== -1
@@ -462,11 +546,6 @@ const cleanUpAnnotations = function(node) {
     : null;
 };
 
-addVisitor({
-  AssignmentExpression(path, state) {
-    // console.log(state);
-  }
-});
 addVisitor(declarationVisitor);
 addVisitor(expressionVisistor);
 

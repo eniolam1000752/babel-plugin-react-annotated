@@ -8,7 +8,7 @@ const replacementConfig = `
             * on dev
             */
             {
-              test: /\.(jsx|tsx)$/,
+              test: /\.(jsx|tsx|js|ts)$/,
               include: paths.appSrc,
               exclude:/node_modules/,
               loader: require.resolve("babel-loader"),

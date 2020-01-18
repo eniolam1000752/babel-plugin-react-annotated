@@ -8,7 +8,7 @@ const replacementConfig = `
             * on dev
             */
             {
-              test: /\.(jsx|tsx)$/,
+              test: /\.(jsx|tsx|js|ts)$/,
               include: paths.appSrc,
               exclude:/node_modules/,
               loader: require.resolve("babel-loader"),
@@ -26,17 +26,24 @@ const replacementConfig = `
             },`;
 
 const runScripts = () => {
-  console.log("running post install script to add config to webpack: ");
   try {
     const data = fs.readFileSync(webPackConfigPath).toString();
-    if (data.indexOf(replacementConfig) === -1) {
-      console.log("did not find the config ooooo ===>");
+    if (
+      /* data.indexOf(replacementConfig) === -1 */ !new RegExp(
+        `plugins: \\[\\['${transfromPath}', {}\\]`
+      ).test(data)
+    ) {
+      console.log(
+        "Did not find react-annotated plugin in webpack.config. adding to config <<<<"
+      );
       fs.writeFileSync(
         webPackConfigPath,
         data.replace(/oneOf:\s*\[/g, "oneOf: [" + replacementConfig)
       );
     } else {
-      console.log("found the config ooooooo.....");
+      console.log(
+        "found react-annotated config in webpack.config. skipping >>>>"
+      );
     }
   } catch (exp) {
     console.log(

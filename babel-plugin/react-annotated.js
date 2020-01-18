@@ -178,15 +178,18 @@ const getMemberExpStateName = function(memberExp) {
 
 const _stateWithReturnTemplate = function(equivNodeRight, name) {
   const setStateNode = template(
-    `${setStatePrefix}${name}( _var_1234 => (temp = NODE_EQUIV) )`
+    `${setStatePrefix}${name}( _var_1234 => (NODE_EQUIV) )`
   );
   const declare1 = types.variableDeclaration("let", [
-    types.variableDeclarator(types.identifier("temp"), null)
+    types.variableDeclarator(
+      types.identifier("_var_1234"),
+      types.identifier(name)
+    )
   ]);
   const declare2 = setStateNode({
     NODE_EQUIV: equivNodeRight
   });
-  const declare3 = types.returnStatement(types.identifier("temp"));
+  const declare3 = types.returnStatement(equivNodeRight);
   const block = types.blockStatement([declare1, declare2, declare3]);
   const arrowFunc = types.arrowFunctionExpression([], block);
 
@@ -206,25 +209,25 @@ const transformer = function(node, type) {
   }
 };
 
-const check__PrefixSyntax = function(node) {
+const check__PrefixSyntax = function(node, path) {
   for (let item of node.declarations) {
     let varName = item.id.name;
 
     if (new RegExp(`^${statePrefix}\\w+$`).test(varName)) {
-      throw new SyntaxError(
+      throw path.buildCodeFrameError(
         `Error in build: non anotated variable should not have '${statePrefix}' prefix for variable: '${varName}'`
       );
     }
   }
 };
-const checkAnnotatedSyntax = function(node) {
+const checkAnnotatedSyntax = function(node, path) {
   const declarations = types.cloneNode(node).declarations;
   node.declarations = [];
   for (let item of declarations) {
     let varName = item.id.name;
 
     if (!new RegExp(`^${statePrefix}\\w+$`).test(varName)) {
-      throw new SyntaxError(
+      throw path.buildCodeFrameError(
         `Error in build: anotated variable should have prefix '${statePrefix}' for variable: '${varName}'. try adding '${statePrefix}' or remove annoation `
       );
     } else {
@@ -278,23 +281,23 @@ const declarationVisitor = {
       ? node.leadingComments[node.leadingComments.length - 1]
       : null;
     if (!immidateTopComment) {
-      check__PrefixSyntax(node);
+      check__PrefixSyntax(node, path);
       return 0;
     }
     if (node.leadingComments.length === 0) {
-      check__PrefixSyntax(node);
+      check__PrefixSyntax(node, path);
       return 0;
     }
     if (!stateAnnotation.test(immidateTopComment.value)) {
-      check__PrefixSyntax(node);
+      check__PrefixSyntax(node, path);
       return 0;
     }
     if (!isParentReactElement(path)) {
-      throw new SyntaxError(
-        `Error in build: state should be defined within a react element either a class or function`
+      throw path.buildCodeFrameError(
+        `Error in build: state should be defined within a functional react element`
       );
     } else {
-      checkAnnotatedSyntax(node);
+      checkAnnotatedSyntax(node, path);
       cleanUpAnnotations(node);
     }
   }
@@ -304,22 +307,24 @@ const expressionVisistor = {
   AssignmentExpression(path) {
     let node = path.node;
     this.varName =
-      stateNames.indexOf(node.left.name) !== -1 ? node.left.name : null;
+      stateNames.indexOf(node.left.name || getMemberExpStateName(node.left)) !==
+      -1
+        ? node.left.name || getMemberExpStateName(node.left)
+        : null;
 
     // checks and performs transform on single assginments
     if (this.varName && !types.isAssignmentExpression(node.right)) {
       // console.log("found a state assignment: ", path);
-      // path.traverse(
-      //   {
-      //     Identifier(path) {
-      //       if (path.node.name === this.varName) {
-      //         path.replaceWith(types.identifier(DUMMY_NAME));
-      //       }
-      //     }
-      //   },
-      //   { varName: this.varName }
-      // );
-      node.left.name = DUMMY_NAME;
+      path.traverse(
+        {
+          Identifier(path) {
+            if (path.node.name === this.varName) {
+              path.replaceWith(types.identifier(DUMMY_NAME));
+            }
+          }
+        },
+        { varName: this.varName }
+      );
       if (
         types.isUpdateExpression(node.right) &&
         isNodeReactState(node.right.argument)

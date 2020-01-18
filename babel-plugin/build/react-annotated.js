@@ -1,51 +1,35 @@
-"use strict";
-
-function _toConsumableArray(arr) { return _arrayWithoutHoles(arr) || _iterableToArray(arr) || _nonIterableSpread(); }
-
-function _nonIterableSpread() { throw new TypeError("Invalid attempt to spread non-iterable instance"); }
-
-function _iterableToArray(iter) { if (Symbol.iterator in Object(iter) || Object.prototype.toString.call(iter) === "[object Arguments]") return Array.from(iter); }
-
-function _arrayWithoutHoles(arr) { if (Array.isArray(arr)) { for (var i = 0, arr2 = new Array(arr.length); i < arr.length; i++) { arr2[i] = arr[i]; } return arr2; } }
-
-function ownKeys(object, enumerableOnly) { var keys = Object.keys(object); if (Object.getOwnPropertySymbols) { var symbols = Object.getOwnPropertySymbols(object); if (enumerableOnly) symbols = symbols.filter(function (sym) { return Object.getOwnPropertyDescriptor(object, sym).enumerable; }); keys.push.apply(keys, symbols); } return keys; }
-
-function _objectSpread(target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i] != null ? arguments[i] : {}; if (i % 2) { ownKeys(Object(source), true).forEach(function (key) { _defineProperty(target, key, source[key]); }); } else if (Object.getOwnPropertyDescriptors) { Object.defineProperties(target, Object.getOwnPropertyDescriptors(source)); } else { ownKeys(Object(source)).forEach(function (key) { Object.defineProperty(target, key, Object.getOwnPropertyDescriptor(source, key)); }); } } return target; }
-
-function _defineProperty(obj, key, value) { if (key in obj) { Object.defineProperty(obj, key, { value: value, enumerable: true, configurable: true, writable: true }); } else { obj[key] = value; } return obj; }
-
 // const transverse = require("@babel/traverse");
-var types = require("@babel/types");
+const types = require("@babel/types");
 
-var template = require("@babel/template")["default"];
+const template = require("@babel/template").default;
 
-var stateAnnotation = /^\s*@state\s*$/;
-var setStatePrefix = "SET";
-var statePrefix = "__";
-var DUMMY_NAME = "_RN_".concat(genVar());
-var annotatedStateList = [];
-var stateNames = [];
-var visitors = {};
+const stateAnnotation = /^\s*@state\s*$/;
+const setStatePrefix = "SET";
+const statePrefix = "__";
+const DUMMY_NAME = `_RN_${genVar()}`;
+let annotatedStateList = [];
+let stateNames = [];
+let visitors = {};
 
-var _useStateTemplate = function _useStateTemplate(initValueNode, idText) {
-  var leftExpression = types.arrayPattern([types.identifier(idText), types.identifier("".concat(setStatePrefix).concat(idText))]);
-  var RightExpression = types.callExpression(types.memberExpression(types.identifier("React"), types.identifier("useState")), [initValueNode]);
+const _useStateTemplate = function (initValueNode, idText) {
+  const leftExpression = types.arrayPattern([types.identifier(idText), types.identifier(`${setStatePrefix}${idText}`)]);
+  const RightExpression = types.callExpression(types.memberExpression(types.identifier("React"), types.identifier("useState")), [initValueNode]);
   return types.variableDeclarator(leftExpression, RightExpression);
 };
 
-var _updateExpressionTemplate = function _updateExpressionTemplate(updateNode, trueVarName) {
-  var buildASTNode = template("".concat(setStatePrefix).concat(trueVarName, "(STATE_NAME => {UPDATE_EXP; return STATE_NAME})"));
+const _updateExpressionTemplate = function (updateNode, trueVarName) {
+  const buildASTNode = template(`${setStatePrefix}${trueVarName}(STATE_NAME => {UPDATE_EXP; return STATE_NAME})`);
   return buildASTNode({
     UPDATE_EXP: updateNode,
     STATE_NAME: DUMMY_NAME
   });
 };
 
-var _updateExpressionTemplate2 = function _updateExpressionTemplate2(dummyVar, updateNode, nestNode, trueVar) {
-  var isLeftMemberExp = types.isMemberExpression(trueVar); // const clonedLeft = types.cloneNode(updateNode);
+const _updateExpressionTemplate2 = (dummyVar, updateNode, nestNode, trueVar) => {
+  const isLeftMemberExp = types.isMemberExpression(trueVar); // const clonedLeft = types.cloneNode(updateNode);
   // const leftExpClone = types.cloneNode(trueVar);
 
-  var buildASTNode = template("".concat(setStatePrefix).concat(trueVar.name || getMemberExpStateName(trueVar), "(STATE_NAME => {UPDATE_EXP;NEST_STATE_NODE ;return STATE_NAME})"));
+  const buildASTNode = template(`${setStatePrefix}${trueVar.name || getMemberExpStateName(trueVar)}(STATE_NAME => {UPDATE_EXP;NEST_STATE_NODE ;return STATE_NAME})`);
 
   if (isLeftMemberExp) {
     replaceStateWithDummyInMemberExp(updateNode.left, dummyVar);
@@ -62,13 +46,13 @@ var _updateExpressionTemplate2 = function _updateExpressionTemplate2(dummyVar, u
   });
 };
 
-var _nestedUpdateExpTemplate = function _nestedUpdateExpTemplate(dummyVar, nestNode, higerStateName, trueVar, LONA) {
-  var leftNodeOfNextAssignment = types.cloneNode(LONA);
-  var isLeftMemberExp = types.isMemberExpression(trueVar);
-  var isNextLeftMemberExp = types.isMemberExpression(leftNodeOfNextAssignment);
-  var nextAssignLeft = leftNodeOfNextAssignment.name || getMemberExpStateName(leftNodeOfNextAssignment);
-  var leftExpClone = types.cloneNode(trueVar);
-  var buildASTNode = !isLeftMemberExp ? template("".concat(setStatePrefix).concat(trueVar.name, "(STATE_NAME => {STATE_NAME = HIGH_STATE_NAME; NEST_STATE_NODE ;return STATE_NAME})")) : template("".concat(setStatePrefix).concat(getMemberExpStateName(trueVar), "(STATE_NAME => {LEFT_EXP  = HIGH_STATE_NAME; NEST_STATE_NODE ;return STATE_NAME})"));
+const _nestedUpdateExpTemplate = function (dummyVar, nestNode, higerStateName, trueVar, LONA) {
+  const leftNodeOfNextAssignment = types.cloneNode(LONA);
+  const isLeftMemberExp = types.isMemberExpression(trueVar);
+  const isNextLeftMemberExp = types.isMemberExpression(leftNodeOfNextAssignment);
+  const nextAssignLeft = leftNodeOfNextAssignment.name || getMemberExpStateName(leftNodeOfNextAssignment);
+  const leftExpClone = types.cloneNode(trueVar);
+  const buildASTNode = !isLeftMemberExp ? template(`${setStatePrefix}${trueVar.name}(STATE_NAME => {STATE_NAME = HIGH_STATE_NAME; NEST_STATE_NODE ;return STATE_NAME})`) : template(`${setStatePrefix}${getMemberExpStateName(trueVar)}(STATE_NAME => {LEFT_EXP  = HIGH_STATE_NAME; NEST_STATE_NODE ;return STATE_NAME})`);
 
   if (isNextLeftMemberExp && stateNames.indexOf(nextAssignLeft) !== -1) {
     replaceStateWithDummyInMemberExp(leftNodeOfNextAssignment, higerStateName);
@@ -80,25 +64,25 @@ var _nestedUpdateExpTemplate = function _nestedUpdateExpTemplate(dummyVar, nestN
   // );
 
 
-  var temp = !isNextLeftMemberExp ? higerStateName : leftNodeOfNextAssignment;
-  var temp2 = stateNames.indexOf(nextAssignLeft) === -1 ? leftNodeOfNextAssignment : temp;
-  var out = {
+  const temp = !isNextLeftMemberExp ? higerStateName : leftNodeOfNextAssignment;
+  const temp2 = stateNames.indexOf(nextAssignLeft) === -1 ? leftNodeOfNextAssignment : temp;
+  let out = {
     HIGH_STATE_NAME: temp2,
     NEST_STATE_NODE: nestNode,
     STATE_NAME: dummyVar
   };
   if (isLeftMemberExp) replaceStateWithDummyInMemberExp(leftExpClone, dummyVar);
-  return buildASTNode(!isLeftMemberExp ? out : _objectSpread({}, out, {
+  return buildASTNode(!isLeftMemberExp ? out : { ...out,
     LEFT_EXP: leftExpClone
-  }));
+  });
 };
 
-var assignmentTemplate = function assignmentTemplate(leftNode, rightNode, LONA, node) {
+const assignmentTemplate = function (leftNode, rightNode, LONA, node) {
   // const isLeftMemberExp = types.isMemberExpression(leftNode);
-  var leftNodeOfNextAssignment = LONA ? types.cloneNode(LONA) : null;
-  var isNextLeftMemberExp = LONA ? types.isMemberExpression(leftNodeOfNextAssignment) : null;
-  var buildAstNode = template("VAR_NAME = RIGHT_NODE");
-  var varInExp = LONA ? leftNodeOfNextAssignment.name || getMemberExpStateName(leftNodeOfNextAssignment) : null; // console.log(
+  const leftNodeOfNextAssignment = LONA ? types.cloneNode(LONA) : null;
+  const isNextLeftMemberExp = LONA ? types.isMemberExpression(leftNodeOfNextAssignment) : null;
+  const buildAstNode = template(`VAR_NAME = RIGHT_NODE`);
+  const varInExp = LONA ? leftNodeOfNextAssignment.name || getMemberExpStateName(leftNodeOfNextAssignment) : null; // console.log(
   //   "test oooo: ",
   //   isNextLeftMemberExp && stateNames.indexOf(varInExp) !== -1,
   //   varInExp
@@ -112,7 +96,7 @@ var assignmentTemplate = function assignmentTemplate(leftNode, rightNode, LONA, 
     }
   }
 
-  var out = {
+  const out = {
     VAR_NAME: leftNode,
     RIGHT_NODE: LONA ? !isNextLeftMemberExp ? rightNode : leftNodeOfNextAssignment : rightNode
   };
@@ -124,10 +108,10 @@ var assignmentTemplate = function assignmentTemplate(leftNode, rightNode, LONA, 
   }
 };
 
-var getMemberExpStateName = function getMemberExpStateName(memberExp) {
-  var out = null;
+const getMemberExpStateName = function (memberExp) {
+  let out = null;
 
-  var func = function func(exp) {
+  let func = exp => {
     if (types.isMemberExpression(exp.object)) {
       func(exp.object);
     } else {
@@ -139,23 +123,23 @@ var getMemberExpStateName = function getMemberExpStateName(memberExp) {
   return out;
 };
 
-var _stateWithReturnTemplate = function _stateWithReturnTemplate(equivNodeRight, name) {
-  var setStateNode = template("".concat(setStatePrefix).concat(name, "( _var_1234 => (temp = NODE_EQUIV) )"));
-  var declare1 = types.variableDeclaration("let", [types.variableDeclarator(types.identifier("temp"), null)]);
-  var declare2 = setStateNode({
+const _stateWithReturnTemplate = function (equivNodeRight, name) {
+  const setStateNode = template(`${setStatePrefix}${name}( _var_1234 => (NODE_EQUIV) )`);
+  const declare1 = types.variableDeclaration("let", [types.variableDeclarator(types.identifier("_var_1234"), types.identifier(name))]);
+  const declare2 = setStateNode({
     NODE_EQUIV: equivNodeRight
   });
-  var declare3 = types.returnStatement(types.identifier("temp"));
-  var block = types.blockStatement([declare1, declare2, declare3]);
-  var arrowFunc = types.arrowFunctionExpression([], block);
+  const declare3 = types.returnStatement(equivNodeRight);
+  const block = types.blockStatement([declare1, declare2, declare3]);
+  const arrowFunc = types.arrowFunctionExpression([], block);
   return types.callExpression(arrowFunc, []);
 };
 
-var isNodeReactState = function isNodeReactState(node) {
+const isNodeReactState = function (node) {
   return stateNames.indexOf(node.name || getMemberExpStateName(node)) !== -1;
 };
 
-var transformer = function transformer(node, type) {
+const transformer = function (node, type) {
   switch (type) {
     case "toUseState":
       return _useStateTemplate(node.init, node.id.name);
@@ -165,95 +149,56 @@ var transformer = function transformer(node, type) {
   }
 };
 
-var check__PrefixSyntax = function check__PrefixSyntax(node) {
-  var _iteratorNormalCompletion = true;
-  var _didIteratorError = false;
-  var _iteratorError = undefined;
+const check__PrefixSyntax = function (node) {
+  for (let item of node.declarations) {
+    let varName = item.id.name;
 
-  try {
-    for (var _iterator = node.declarations[Symbol.iterator](), _step; !(_iteratorNormalCompletion = (_step = _iterator.next()).done); _iteratorNormalCompletion = true) {
-      var item = _step.value;
-      var varName = item.id.name;
-
-      if (new RegExp("^".concat(statePrefix, "\\w+$")).test(varName)) {
-        throw new SyntaxError("Error in build: non anotated variable should not have '".concat(statePrefix, "' prefix for variable: '").concat(varName, "'"));
-      }
-    }
-  } catch (err) {
-    _didIteratorError = true;
-    _iteratorError = err;
-  } finally {
-    try {
-      if (!_iteratorNormalCompletion && _iterator["return"] != null) {
-        _iterator["return"]();
-      }
-    } finally {
-      if (_didIteratorError) {
-        throw _iteratorError;
-      }
+    if (new RegExp(`^${statePrefix}\\w+$`).test(varName)) {
+      throw new SyntaxError(`Error in build: non anotated variable should not have '${statePrefix}' prefix for variable: '${varName}'`);
     }
   }
 };
 
-var checkAnnotatedSyntax = function checkAnnotatedSyntax(node) {
-  var declarations = types.cloneNode(node).declarations;
+const checkAnnotatedSyntax = function (node) {
+  const declarations = types.cloneNode(node).declarations;
   node.declarations = [];
-  var _iteratorNormalCompletion2 = true;
-  var _didIteratorError2 = false;
-  var _iteratorError2 = undefined;
 
-  try {
-    for (var _iterator2 = declarations[Symbol.iterator](), _step2; !(_iteratorNormalCompletion2 = (_step2 = _iterator2.next()).done); _iteratorNormalCompletion2 = true) {
-      var item = _step2.value;
-      var varName = item.id.name;
+  for (let item of declarations) {
+    let varName = item.id.name;
 
-      if (!new RegExp("^".concat(statePrefix, "\\w+$")).test(varName)) {
-        throw new SyntaxError("Error in build: anotated variable should have prefix '".concat(statePrefix, "' for variable: '").concat(varName, "'. try adding '").concat(statePrefix, "' or remove annoation "));
-      } else {
-        stateCollector(item);
-        trasfromDeclearationsToUseState(node, item);
-      }
-    }
-  } catch (err) {
-    _didIteratorError2 = true;
-    _iteratorError2 = err;
-  } finally {
-    try {
-      if (!_iteratorNormalCompletion2 && _iterator2["return"] != null) {
-        _iterator2["return"]();
-      }
-    } finally {
-      if (_didIteratorError2) {
-        throw _iteratorError2;
-      }
+    if (!new RegExp(`^${statePrefix}\\w+$`).test(varName)) {
+      throw new SyntaxError(`Error in build: anotated variable should have prefix '${statePrefix}' for variable: '${varName}'. try adding '${statePrefix}' or remove annoation `);
+    } else {
+      stateCollector(item);
+      trasfromDeclearationsToUseState(node, item);
     }
   }
 };
 
 function genVar() {
-  var randVar = "".concat(Math.random());
+  const randVar = `${Math.random()}`;
   return randVar.slice(2, randVar.length - 9);
 } // const exceptionMsg = function(type, data, errType = null) {};
 
 
-var addVisitor = function addVisitor(visitor) {
+const addVisitor = function (visitor) {
   Object.assign(visitors, visitor);
 };
 
-var isParentReactElement = function isParentReactElement(nodePath) {
-  var parentNode = nodePath.parentPath.parent;
+const isParentReactElement = function (nodePath) {
+  let parentNode = nodePath.parentPath.parent;
 
   if (types.isFunctionDeclaration(parentNode) || types.isArrowFunctionExpression(parentNode)) {
     if (types.isFunctionDeclaration(parentNode)) {
-      var funcFirstLetter = (parentNode.id.name || "r")[0]; // r is just a dummy variable that results to false
+      const funcFirstLetter = (parentNode.id.name || "r")[0]; // r is just a dummy variable that results to false
 
       return funcFirstLetter.toUpperCase() === funcFirstLetter || /^use/.test(parentNode.id.name) ? true : false;
     }
 
     if (types.isArrowFunctionExpression(parentNode)) {
       parentNode = nodePath.parentPath.parentPath.parent;
-      var _funcFirstLetter = (parentNode.id.name || "r")[0];
-      return _funcFirstLetter.toUpperCase() === _funcFirstLetter || /^use/.test(parentNode.id.name) ? true : false;
+      const funcFirstLetter = (parentNode.id.name || "r")[0];
+      return funcFirstLetter.toUpperCase() === funcFirstLetter || /^use/.test(parentNode.id.name) ? true : false;
     }
   } else {
     return false;
@@ -262,10 +207,10 @@ var isParentReactElement = function isParentReactElement(nodePath) {
   return false;
 };
 
-var declarationVisitor = {
-  VariableDeclaration: function VariableDeclaration(path) {
-    var node = path.node;
-    var immidateTopComment = node.leadingComments ? node.leadingComments[node.leadingComments.length - 1] : null;
+const declarationVisitor = {
+  VariableDeclaration(path) {
+    const node = path.node;
+    const immidateTopComment = node.leadingComments ? node.leadingComments[node.leadingComments.length - 1] : null;
 
     if (!immidateTopComment) {
       check__PrefixSyntax(node);
@@ -283,52 +228,80 @@ var declarationVisitor = {
     }
 
     if (!isParentReactElement(path)) {
-      throw new SyntaxError("Error in build: state should be defined within a react element either a class or function");
+      throw new SyntaxError(`Error in build: state should be defined within a functional react element`);
     } else {
       checkAnnotatedSyntax(node);
       cleanUpAnnotations(node);
     }
   }
+
 };
-var expressionVisistor = {
-  AssignmentExpression: function AssignmentExpression(path) {
-    var node = path.node;
-    this.varName = stateNames.indexOf(node.left.name) !== -1 ? node.left.name : null; // checks and performs transform on single assginments
+const expressionVisistor = {
+  AssignmentExpression(path) {
+    let node = path.node;
+    this.varName = stateNames.indexOf(node.left.name || getMemberExpStateName(node.left)) !== -1 ? node.left.name || getMemberExpStateName(node.left) : null; // checks and performs transform on single assginments
 
     if (this.varName && !types.isAssignmentExpression(node.right)) {
       // console.log("found a state assignment: ", path);
       path.traverse({
-        Identifier: function Identifier(path) {
+        Identifier(path) {
           if (path.node.name === this.varName) {
             path.replaceWith(types.identifier(DUMMY_NAME));
           }
         }
+
       }, {
         varName: this.varName
       });
+
+      if (types.isUpdateExpression(node.right) && isNodeReactState(node.right.argument)) {
+        const args = types.cloneNode(node.right).argument;
+        const name = args.name || getMemberExpStateName(args);
+
+        if (types.isMemberExpression(node.right.argument)) {
+          replaceStateWithDummyInMemberExp(node.right.argument, "_var_1234");
+        } else if (types.isIdentifier(node.right.argument)) {
+          node.right.argument.name = "_var_1234";
+        }
+
+        node.right = _stateWithReturnTemplate(types.cloneNode(node.right), name);
+      }
+
       path.replaceWith(_updateExpressionTemplate(node, this.varName));
     } // checks and perform transform on nested assignment
 
 
     if (types.isAssignmentExpression(node.right) && !types.isAssignmentExpression(path.parent)) {
       // console.log("found a nested assignment ooo: ", path);
-      var resultAssignNode = null;
-      var higherState = null;
+      let resultAssignNode = null;
+      let higherState = null;
 
-      var reculsive = function reculsive(assignNode) {
+      let reculsive = assignNode => {
         if (types.isAssignmentExpression(assignNode.right) && stateNames.indexOf(assignNode.left.name || getMemberExpStateName(assignNode.left)) !== -1 ? true : assignNode.right.operator === "=") {
-          resultAssignNode = stateNames.indexOf(assignNode.left.name || getMemberExpStateName(assignNode.left)) !== -1 ? _nestedUpdateExpTemplate(higherState || "_RN_".concat(genVar()), resultAssignNode, higherState = "_RN_".concat(genVar()), assignNode.left, assignNode.right.left) : !resultAssignNode ? assignmentTemplate(assignNode.left, higherState = "_RN_".concat(genVar()), assignNode.right.left) : !resultAssignNode.length ? [assignmentTemplate(assignNode.left, higherState, assignNode.right.left), resultAssignNode] : [assignmentTemplate(assignNode.left, higherState, assignNode.right.left)].concat(_toConsumableArray(resultAssignNode)); // console.log("result exp: ", types.cloneNode(resultAssignNode));
+          resultAssignNode = stateNames.indexOf(assignNode.left.name || getMemberExpStateName(assignNode.left)) !== -1 ? _nestedUpdateExpTemplate(higherState || `_RN_${genVar()}`, resultAssignNode, higherState = `_RN_${genVar()}`, assignNode.left, assignNode.right.left) : !resultAssignNode ? assignmentTemplate(assignNode.left, higherState = `_RN_${genVar()}`, assignNode.right.left) : !resultAssignNode.length ? [assignmentTemplate(assignNode.left, higherState, assignNode.right.left), resultAssignNode] : [assignmentTemplate(assignNode.left, higherState, assignNode.right.left), ...resultAssignNode]; // console.log("result exp: ", types.cloneNode(resultAssignNode));
 
           reculsive(assignNode.right);
         } else {
           if (resultAssignNode) {
-            var higherStateNode = types.cloneNode(assignNode.left);
-            var leftNode = types.cloneNode(assignNode.left);
-            var varInExp = leftNode.name || getMemberExpStateName(leftNode);
-            higherStateNode = types.identifier(higherState); // assignNode.left = types.identifier(higherState);
-            // console.log("result2: ", resultAssignNode);
+            let higherStateNode = types.cloneNode(assignNode.left);
+            const leftNode = types.cloneNode(assignNode.left);
+            const varInExp = leftNode.name || getMemberExpStateName(leftNode);
+            higherStateNode = types.identifier(higherState);
 
-            resultAssignNode = stateNames.indexOf(varInExp) !== -1 ? _updateExpressionTemplate2(higherState, assignNode, resultAssignNode, leftNode) : !resultAssignNode.length ? [assignmentTemplate(higherStateNode, assignNode.right), assignmentTemplate(leftNode, higherState, null, assignNode), resultAssignNode] : [assignmentTemplate(higherStateNode, assignNode.right), assignmentTemplate(leftNode, higherState, null, assignNode)].concat(_toConsumableArray(resultAssignNode));
+            if (types.isUpdateExpression(assignNode.right) && isNodeReactState(assignNode.right.argument)) {
+              const args = types.cloneNode(assignNode.right).argument;
+              const name = args.name || getMemberExpStateName(args);
+
+              if (types.isMemberExpression(assignNode.right.argument)) {
+                replaceStateWithDummyInMemberExp(assignNode.right.argument, "_var_1234");
+              } else if (types.isIdentifier(assignNode.right.argument)) {
+                assignNode.right.argument.name = "_var_1234";
+              }
+
+              assignNode.right = _stateWithReturnTemplate(types.cloneNode(assignNode.right), name);
+            }
+
+            resultAssignNode = stateNames.indexOf(varInExp) !== -1 ? _updateExpressionTemplate2(higherState, assignNode, resultAssignNode, leftNode) : !resultAssignNode.length ? [assignmentTemplate(higherStateNode, assignNode.right), assignmentTemplate(leftNode, higherState, null, assignNode), resultAssignNode] : [assignmentTemplate(higherStateNode, assignNode.right), assignmentTemplate(leftNode, higherState, null, assignNode), ...resultAssignNode];
           }
         }
       };
@@ -349,52 +322,56 @@ var expressionVisistor = {
       this.varName = stateNames.indexOf(getMemberExpStateName(node.left)) !== -1 ? getMemberExpStateName(node.left) : null; // console.log("found an object assignment: ", this.varName);
 
       path.traverse({
-        Identifier: function Identifier(path) {
+        Identifier(path) {
           if (path.node.name === this.varName) {
             path.replaceWith(types.identifier(DUMMY_NAME));
             this.assignmentPath.replaceWith(_updateExpressionTemplate(this.assignmentPath.node, this.varName));
           }
         }
+
       }, {
         varName: this.varName,
         assignmentPath: path
       });
     }
   },
+
   // checks and transfroms update expressions like (++i & i--)
-  UpdateExpression: function UpdateExpression(path) {
-    var node = path.node;
+  UpdateExpression(path) {
+    let node = path.node;
     this.varName = stateNames.indexOf(node.argument.name) !== -1 ? node.argument.name : null;
 
     if (this.varName && !types.isAssignmentExpression(path.parent)) {
       // console.log("found an update expression: ", path);
       path.traverse({
-        Identifier: function Identifier(path) {
+        Identifier(path) {
           if (path.node.name === this.varName) {
             path.replaceWith(types.identifier(DUMMY_NAME));
           }
         }
+
       }, {
         varName: this.varName
       });
       path.replaceWith(_updateExpressionTemplate(node, this.varName));
     }
   }
+
 };
 
-var stateCollector = function stateCollector(declearNode) {
-  var varName = declearNode.id.name;
+const stateCollector = function (declearNode) {
+  let varName = declearNode.id.name;
   annotatedStateList.push(declearNode);
   stateNames.push(varName);
 };
 
-var trasfromDeclearationsToUseState = function trasfromDeclearationsToUseState(node, declearNode) {
+const trasfromDeclearationsToUseState = function (node, declearNode) {
   node.declarations.push(transformer(declearNode, "toUseState"));
-  "";
+  ``;
 };
 
-var replaceStateWithDummyInMemberExp = function replaceStateWithDummyInMemberExp(memberExp, dummyVar) {
-  var func = function func(exp) {
+const replaceStateWithDummyInMemberExp = (memberExp, dummyVar) => {
+  let func = exp => {
     if (types.isMemberExpression(exp.object)) {
       func(exp.object);
     } else {
@@ -405,28 +382,30 @@ var replaceStateWithDummyInMemberExp = function replaceStateWithDummyInMemberExp
   func(memberExp);
 };
 
-var cleanUpAnnotations = function cleanUpAnnotations(node) {
-  node.leadingComments = node.leadingComments ? node.leadingComments.filter(function (item) {
+const cleanUpAnnotations = function (node) {
+  node.leadingComments = node.leadingComments ? node.leadingComments.filter(item => {
     return !item.value.match(/^@\w+$/) ? item : null;
   }) : null;
-  node.trailingComments = node.trailingComments ? node.trailingComments.filter(function (item) {
-    return !item.value.match(/^@\w+$/) ? item : null;
-  }) : null;
+  node.trailingComments = node.trailingComments ? node.trailingComments.filter(item => !item.value.match(/^@\w+$/) ? item : null) : null;
 };
 
 addVisitor({
-  AssignmentExpression: function AssignmentExpression(path, state) {// console.log(state);
+  AssignmentExpression(path, state) {// console.log(state);
   }
+
 });
 addVisitor(declarationVisitor);
 addVisitor(expressionVisistor);
 
 function astTransfromFunction() {
   return {
-    pre: function pre() {},
+    pre() {},
+
     visitor: visitors,
-    post: function post(val) {// console.log("after transverse:", val);
+
+    post(val) {// console.log("after transverse:", val);
     }
+
   };
 }
 
