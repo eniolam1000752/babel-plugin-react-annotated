@@ -209,25 +209,25 @@ const transformer = function(node, type) {
   }
 };
 
-const check__PrefixSyntax = function(node) {
+const check__PrefixSyntax = function(node, path) {
   for (let item of node.declarations) {
     let varName = item.id.name;
 
     if (new RegExp(`^${statePrefix}\\w+$`).test(varName)) {
-      throw new SyntaxError(
+      throw path.buildCodeFrameError(
         `Error in build: non anotated variable should not have '${statePrefix}' prefix for variable: '${varName}'`
       );
     }
   }
 };
-const checkAnnotatedSyntax = function(node) {
+const checkAnnotatedSyntax = function(node, path) {
   const declarations = types.cloneNode(node).declarations;
   node.declarations = [];
   for (let item of declarations) {
     let varName = item.id.name;
 
     if (!new RegExp(`^${statePrefix}\\w+$`).test(varName)) {
-      throw new SyntaxError(
+      throw path.buildCodeFrameError(
         `Error in build: anotated variable should have prefix '${statePrefix}' for variable: '${varName}'. try adding '${statePrefix}' or remove annoation `
       );
     } else {
@@ -281,23 +281,23 @@ const declarationVisitor = {
       ? node.leadingComments[node.leadingComments.length - 1]
       : null;
     if (!immidateTopComment) {
-      check__PrefixSyntax(node);
+      check__PrefixSyntax(node, path);
       return 0;
     }
     if (node.leadingComments.length === 0) {
-      check__PrefixSyntax(node);
+      check__PrefixSyntax(node, path);
       return 0;
     }
     if (!stateAnnotation.test(immidateTopComment.value)) {
-      check__PrefixSyntax(node);
+      check__PrefixSyntax(node, path);
       return 0;
     }
     if (!isParentReactElement(path)) {
-      throw new SyntaxError(
+      throw path.buildCodeFrameError(
         `Error in build: state should be defined within a functional react element`
       );
     } else {
-      checkAnnotatedSyntax(node);
+      checkAnnotatedSyntax(node, path);
       cleanUpAnnotations(node);
     }
   }
@@ -314,6 +314,7 @@ const expressionVisistor = {
 
     // checks and performs transform on single assginments
     if (this.varName && !types.isAssignmentExpression(node.right)) {
+      // console.log("found a state assignment: ", path);
       path.traverse(
         {
           Identifier(path) {
@@ -324,7 +325,6 @@ const expressionVisistor = {
         },
         { varName: this.varName }
       );
-
       if (
         types.isUpdateExpression(node.right) &&
         isNodeReactState(node.right.argument)
@@ -546,6 +546,11 @@ const cleanUpAnnotations = function(node) {
     : null;
 };
 
+addVisitor({
+  AssignmentExpression(path, state) {
+    // console.log(state);
+  }
+});
 addVisitor(declarationVisitor);
 addVisitor(expressionVisistor);
 

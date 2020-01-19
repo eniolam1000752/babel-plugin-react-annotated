@@ -11,16 +11,33 @@ let stateNames = [];
 let visitors = {};
 
 const _useStateTemplate = function(initValueNode, idText) {
+  // const leftExpression = types.arrayPattern([
+  //   types.identifier(idText),
+  //   types.identifier(`${setStatePrefix}${idText}`)
+  // ]);
+
+  const objectConstruct = types.objectExpression([
+    types.objectProperty(types.identifier(idText), initValueNode)
+  ]);
+
   const leftExpression = types.arrayPattern([
-    types.identifier(idText),
+    types.objectPattern([
+      types.objectProperty(
+        types.identifier(idText),
+        types.identifier(idText),
+        false,
+        true
+      )
+    ]),
     types.identifier(`${setStatePrefix}${idText}`)
   ]);
+
   const RightExpression = types.callExpression(
     types.memberExpression(
       types.identifier("React"),
       types.identifier("useState")
     ),
-    [initValueNode]
+    [objectConstruct /* initValueNode */]
   );
   return types.variableDeclarator(leftExpression, RightExpression);
 };
@@ -51,11 +68,25 @@ const _updateExpressionTemplate2 = (
       )}(STATE_NAME => {UPDATE_EXP;NEST_STATE_NODE ;return STATE_NAME})`
   );
 
+  // if (isLeftMemberExp) {
+  //   replaceStateWithDummyInMemberExp(updateNode.left, dummyVar);
+  // } else {
+  //   if (types.isIdentifier(updateNode.left)) {
+  //     updateNode.left.name = dummyVar;
+  //   }
+  // }
   if (isLeftMemberExp) {
-    replaceStateWithDummyInMemberExp(updateNode.left, dummyVar);
+    replaceStateWithDummyInMemberExp(
+      updateNode.left,
+      dummyVar,
+      memberExpNode(getMemberExpStateName(trueVar), dummyVar)
+    );
   } else {
     if (types.isIdentifier(updateNode.left)) {
-      updateNode.left.name = dummyVar;
+      updateNode.left = memberExpNode(
+        trueVar.name,
+        dummyVar
+      ); /* types.identifier(dummyVar); */
     }
   }
 
@@ -84,7 +115,7 @@ const _nestedUpdateExpTemplate = function(
   const leftExpClone = types.cloneNode(trueVar);
   const buildASTNode = !isLeftMemberExp
     ? template(
-        `${setStatePrefix}${trueVar.name}(STATE_NAME => {STATE_NAME = HIGH_STATE_NAME; NEST_STATE_NODE ;return STATE_NAME})`
+        `${setStatePrefix}${trueVar.name}(STATE_NAME => {MEMBER_STATE_NAME = HIGH_STATE_NAME; NEST_STATE_NODE ;return STATE_NAME})`
       )
     : template(
         `${setStatePrefix}${getMemberExpStateName(
@@ -110,9 +141,25 @@ const _nestedUpdateExpTemplate = function(
     NEST_STATE_NODE: nestNode,
     STATE_NAME: dummyVar
   };
-  if (isLeftMemberExp) replaceStateWithDummyInMemberExp(leftExpClone, dummyVar);
+  if (isLeftMemberExp) {
+    // replaceStateWithDummyInMemberExp(leftExpClone, dummyVar);
+    replaceStateWithDummyInMemberExp(
+      leftExpClone,
+      dummyVar,
+      memberExpNode(getMemberExpStateName(trueVar), dummyVar)
+    );
+  }
+
   return buildASTNode(
-    !isLeftMemberExp ? out : { ...out, LEFT_EXP: leftExpClone }
+    !isLeftMemberExp
+      ? {
+          ...out,
+          MEMBER_STATE_NAME: memberExpNode(
+            trueVar.name || getMemberExpStateName(trueVar),
+            dummyVar
+          )
+        }
+      : { ...out, LEFT_EXP: leftExpClone }
   );
 };
 
@@ -198,6 +245,13 @@ const _stateWithReturnTemplate = function(equivNodeRight, name) {
 
 const isNodeReactState = function(node) {
   return stateNames.indexOf(node.name || getMemberExpStateName(node)) !== -1;
+};
+
+const memberExpNode = function(stateName, varName) {
+  return types.memberExpression(
+    types.identifier(varName || DUMMY_NAME),
+    types.identifier(stateName)
+  );
 };
 
 const transformer = function(node, type) {
@@ -319,7 +373,9 @@ const expressionVisistor = {
         {
           Identifier(path) {
             if (path.node.name === this.varName) {
-              path.replaceWith(types.identifier(DUMMY_NAME));
+              path._replaceWith(
+                memberExpNode(this.varName) /* types.identifier(DUMMY_NAME) */
+              );
             }
           }
         },
@@ -522,12 +578,16 @@ const trasfromDeclearationsToUseState = function(node, declearNode) {
   ``;
 };
 
-const replaceStateWithDummyInMemberExp = (memberExp, dummyVar) => {
+const replaceStateWithDummyInMemberExp = (
+  memberExp,
+  dummyVar,
+  otherVarNode
+) => {
   let func = exp => {
     if (types.isMemberExpression(exp.object)) {
       func(exp.object);
     } else {
-      exp.object.name = dummyVar;
+      exp.object = otherVarNode || types.identifier(dummyVar);
     }
   };
   func(memberExp);

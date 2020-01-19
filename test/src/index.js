@@ -23,7 +23,7 @@ const useTestComponent = () => {
             //   "eniola"
             // ] = __state1 = val1.data[0] = val2[0] = value.person.name[0] = val[0]++;
             // __state3[0].number = ++__state3;
-            __state3.data = ++__state1 + "label";
+            __state3.data = __state1 = __state2 + 1;
             // __state2 = ++__state1;
           }}
         >
