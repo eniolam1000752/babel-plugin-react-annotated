@@ -7,7 +7,7 @@ const useTestComponent = () => {
     __state3 = [],
     __status = false;
   //@state
-  const __testState = { data: "eniola" };
+  // const __testState = { data: "eniola" };
   let var1 = {};
   var _value = "string";
 
@@ -23,7 +23,9 @@ const useTestComponent = () => {
             //   "eniola"
             // ] = __state1 = val1.data[0] = val2[0] = value.person.name[0] = val[0]++;
             // __state3[0].number = ++__state3;
-            __state3.data = __state1 = __state2 + 1;
+            __state1.key[0] = __state2[9] = eni.leg = tunde.left.leg /*  __state3.eni[0] = */ = __state3 =
+              __state2.key;
+            // __state3 = __state2.key;
             // __state2 = ++__state1;
           }}
         >
