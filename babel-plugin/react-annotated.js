@@ -583,21 +583,23 @@ const expressionVisistor = {
 
   // checks and transfroms update expressions like (++i & i--)
   UpdateExpression(path) {
-    let node = path.node;
+    const node = path.node;
+    const args = node.argument;
+    // console.log("name: ", "");
     this.varName =
-      stateNames.indexOf(node.argument.name) !== -1 ? node.argument.name : null;
+      // stateNames.indexOf(node.argument.name) !== -1 ? node.argument.name : null;
+      isNodeReactState(args) ? args.name || getMemberExpStateName(args) : null;
     if (this.varName && !types.isAssignmentExpression(path.parent)) {
-      // console.log("found an update expression: ", path);
-      path.traverse(
-        {
-          Identifier(path) {
-            if (path.node.name === this.varName) {
-              path.replaceWith(types.identifier(DUMMY_NAME));
-            }
-          }
-        },
-        { varName: this.varName }
-      );
+      console.log("found an update expression: ", this.varName);
+      if (types.isMemberExpression(args)) {
+        replaceStateWithDummyInMemberExp(
+          args,
+          null,
+          memberExpNode(this.varName, DUMMY_NAME)
+        );
+      } else if (types.isIdentifier(args)) {
+        node.argument = memberExpNode(this.varName, DUMMY_NAME);
+      }
       path.replaceWith(_updateExpressionTemplate(node, this.varName));
     }
   }
@@ -610,6 +612,7 @@ const stateCollector = function(declearNode) {
 };
 
 const trasfromDeclearationsToUseState = function(node, declearNode) {
+  node.kind = "const";
   node.declarations.push(transformer(declearNode, "toUseState"));
   ``;
 };

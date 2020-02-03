@@ -143,7 +143,14 @@ const _nestedUpdateExpTemplate = function(
       );
 
   if (isNextLeftMemberExp && stateNames.indexOf(nextAssignLeft) !== -1) {
-    replaceStateWithDummyInMemberExp(leftNodeOfNextAssignment, higerStateName);
+    replaceStateWithDummyInMemberExp(
+      leftNodeOfNextAssignment,
+      higerStateName,
+      memberExpNode(nextAssignLeft, higerStateName)
+    );
+  }
+  if (!isNextLeftMemberExp && stateNames.indexOf(nextAssignLeft) !== -1) {
+    higerStateName = memberExpNode(nextAssignLeft, dummyVar);
   }
   // console.log(
   //   "nest setstate builder: ",
@@ -202,12 +209,19 @@ const assignmentTemplate = function(leftNode, rightNode, LONA, node) {
   // );
   if (LONA) {
     if (LONA && isNextLeftMemberExp && stateNames.indexOf(varInExp) !== -1) {
-      replaceStateWithDummyInMemberExp(leftNodeOfNextAssignment, rightNode);
+      console.log("found a next assingment => ");
+      replaceStateWithDummyInMemberExp(
+        leftNodeOfNextAssignment,
+        rightNode,
+        memberExpNode(
+          getMemberExpStateName(leftNodeOfNextAssignment),
+          rightNode
+        )
+      );
     } else {
-      rightNode =
-        stateNames.indexOf(varInExp) === -1
-          ? leftNodeOfNextAssignment.name
-          : rightNode;
+      rightNode = !isNodeReactState(varInExp)
+        ? leftNodeOfNextAssignment.name
+        : memberExpNode(leftNodeOfNextAssignment.name, rightNode);
     }
   }
   const out = {
@@ -264,7 +278,9 @@ const _stateWithReturnTemplate = function(equivNodeRight, name) {
 };
 
 const isNodeReactState = function(node) {
-  return stateNames.indexOf(node.name || getMemberExpStateName(node)) !== -1;
+  return typeof node === "string"
+    ? stateNames.indexOf(node) !== -1
+    : stateNames.indexOf(node.name || getMemberExpStateName(node)) !== -1;
 };
 
 const memberExpNode = function(stateName, varName) {
@@ -594,6 +610,7 @@ const stateCollector = function(declearNode) {
 };
 
 const trasfromDeclearationsToUseState = function(node, declearNode) {
+  node.kind = "const";
   node.declarations.push(transformer(declearNode, "toUseState"));
   ``;
 };
@@ -601,13 +618,13 @@ const trasfromDeclearationsToUseState = function(node, declearNode) {
 const replaceStateWithDummyInMemberExp = (
   memberExp,
   dummyVar,
-  otherVarNode
+  overrideVarNode
 ) => {
   let func = exp => {
     if (types.isMemberExpression(exp.object)) {
       func(exp.object);
     } else {
-      exp.object = otherVarNode || types.identifier(dummyVar);
+      exp.object = overrideVarNode || types.identifier(dummyVar);
     }
   };
   func(memberExp);
