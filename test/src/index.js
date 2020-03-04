@@ -17,8 +17,8 @@ const useTestComponent = () => {
         <div>{__state2}</div>
         <div
           onMouseDown={() => {
-            __state1 = ++__state3.value[0];
-            ++__state1.val;
+            // __state1 = ++__state3.value[0];
+            // ++__state1.val;
           }}
         >
           {__state3}
@@ -30,7 +30,9 @@ const useTestComponent = () => {
             //   "eniola"
             // ] = __state1 = val1.data[0] = val2[0] = value.person.name[0] = val[0]++;
             // __state3[0].number = ++__state3;
-            __state1 = __state2 = __state3 = 2; // /*  __state3.eni[0] = */ = __state3 = ++__state2.key;
+            // __state3 = ++__state1.val; // /*  __state3.eni[0] = */ = __state3 = ++__state2.key;
+            //@depend(__state3)
+            __state2 = __state3;
             // __state3 = __state2.key;
             // __state2 = ++__state1;
           }}

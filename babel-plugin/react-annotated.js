@@ -209,7 +209,7 @@ const assignmentTemplate = function(leftNode, rightNode, LONA, node) {
   // );
   if (LONA) {
     if (LONA && isNextLeftMemberExp && stateNames.indexOf(varInExp) !== -1) {
-      console.log("found a next assingment => ");
+      // console.log("found a next assingment => ");
       replaceStateWithDummyInMemberExp(
         leftNodeOfNextAssignment,
         rightNode,
@@ -258,7 +258,7 @@ const getMemberExpStateName = function(memberExp) {
 };
 
 const _stateWithReturnTemplate = function(equivNodeRight, name, nameExp) {
-  console.log("for name: ", name, " : ", nameExp);
+  // console.log("for name: ", name, " : ", nameExp);
   const setStateNode = template(
     `${setStatePrefix}${name}( ARGS => { NODE_EQUIV; return ARGS;  })`
   );
@@ -394,6 +394,23 @@ const declarationVisitor = {
   }
 };
 
+const makeCallerFuncAsync = function(path) {
+  let funcExp = null;
+  const reculsive = function(parentPath) {
+    if (
+      types.isArrowFunctionExpression(parentPath.parent) ||
+      types.isFunctionExpression(parentPath.parent)
+    ) {
+      funcExp = parentPath.parent;
+    } else {
+      reculsive(parentPath.parentPath);
+    }
+  };
+  reculsive(path.parentPath);
+  if (funcExp) funcExp.async = true;
+  return funcExp;
+};
+
 const expressionVisistor = {
   AssignmentExpression(path) {
     let node = path.node;
@@ -405,7 +422,7 @@ const expressionVisistor = {
 
     // checks and performs transform on single assginments
     if (this.varName && !types.isAssignmentExpression(node.right)) {
-      // console.log("found a state assignment: ", path);
+      console.log("found an assignment parent: ", makeCallerFuncAsync(path));
       path.traverse(
         {
           Identifier(path) {
@@ -422,7 +439,7 @@ const expressionVisistor = {
         types.isUpdateExpression(node.right) &&
         isNodeReactState(node.right.argument)
       ) {
-        const dumVar = "_var_1234";
+        const dumVar = DUMMY_NAME;
         const nodeClone = types.cloneNode(node.right);
         const args = nodeClone.argument;
         const name = args.name || getMemberExpStateName(args);
@@ -441,7 +458,20 @@ const expressionVisistor = {
           nodeClone
         );
       }
-      path.replaceWith(_updateExpressionTemplate(node, this.varName));
+
+      path.replaceWith(
+        types.awaitExpression(
+          types.callExpression(
+            types.arrowFunctionExpression(
+              [],
+              types.blockStatement([
+                _updateExpressionTemplate(node, this.varName)
+              ])
+            ),
+            []
+          )
+        )
+      );
     }
 
     // checks and perform transform on nested assignment
@@ -516,7 +546,8 @@ const expressionVisistor = {
               if (types.isMemberExpression(assignNode.right.argument)) {
                 replaceStateWithDummyInMemberExp(
                   assignNode.right.argument,
-                  DUMMY_NAME
+                  DUMMY_NAME,
+                  memberExpNode(name, DUMMY_NAME)
                 );
               } else if (types.isIdentifier(assignNode.right.argument)) {
                 assignNode.right.argument.name = DUMMY_NAME;
@@ -589,6 +620,7 @@ const expressionVisistor = {
         { varName: this.varName, assignmentPath: path }
       );
     }
+    dependsExpression(path);
   },
 
   // checks and transfroms update expressions like (++i & i--)
@@ -601,7 +633,7 @@ const expressionVisistor = {
       ? args.name || getMemberExpStateName(args)
       : null;
     if (this.varName && !types.isAssignmentExpression(path.parent)) {
-      console.log("found an update expression: ", this.varName);
+      // console.log("found an update expression: ", this.varName);
       if (types.isMemberExpression(args)) {
         replaceStateWithDummyInMemberExp(
           args,
@@ -622,6 +654,8 @@ const expressionVisistor = {
     }
   }
 };
+
+const dependsExpression = (path, state) => {};
 
 const stateCollector = function(declearNode) {
   let varName = declearNode.id.name;
@@ -663,16 +697,12 @@ const cleanUpAnnotations = function(node) {
     : null;
 };
 
-addVisitor({
-  AssignmentExpression(path, state) {
-    // console.log(state);
-  }
-});
 addVisitor(declarationVisitor);
 addVisitor(expressionVisistor);
 
 function astTransfromFunction() {
   return {
+    name: "react annnotated",
     pre() {},
     visitor: visitors,
     post(val) {
