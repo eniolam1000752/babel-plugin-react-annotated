@@ -5,7 +5,9 @@ const useTestComponent = () => {
   const [{
     __state1
   }, SET__state1] = React.useState({
-    __state1: 3
+    __state1: {
+      val: 3
+    }
   }),
         [{
     __state2
@@ -28,16 +30,31 @@ const useTestComponent = () => {
   var _value = "string";
   return React.createElement(React.Fragment, null, React.createElement("div", null, React.createElement("div", null, __state2), React.createElement("div", {
     onMouseDown: () => {
-      SET__state3(_RN_38227378 => {
-        _RN_38227378 = Object.assign({}, _RN_38227378);
-        ++_RN_38227378.__state3.value[0];
-        return _RN_38227378;
+      SET__state1(_RN_15315748 => {
+        _RN_15315748 = Object.assign({}, _RN_15315748);
+
+        _RN_15315748.__state1 = (() => {
+          let _RN_15315748 = __state3.value[0];
+          SET__state3(_RN_15315748 => {
+            _RN_15315748 = Object.assign({}, _RN_15315748);
+            ++_var_1234.__state3.value[0];
+            return _RN_15315748;
+          });
+          return ++_RN_15315748;
+        })();
+
+        return _RN_15315748;
       });
-      SET__state1(_RN_38227378 => {
-        _RN_38227378 = Object.assign({}, _RN_38227378);
-        ++_RN_38227378.__state1;
-        return _RN_38227378;
-      });
+
+      (() => {
+        let _RN_15315748 = __state1.val;
+        SET__state1(_RN_15315748 => {
+          _RN_15315748 = Object.assign({}, _RN_15315748);
+          ++_RN_15315748.__state1.val;
+          return _RN_15315748;
+        });
+        return ++_RN_15315748;
+      })();
     }
   }, __state3), React.createElement("div", {
     onClick: () => {
@@ -46,30 +63,22 @@ const useTestComponent = () => {
       //   "eniola"
       // ] = __state1 = val1.data[0] = val2[0] = value.person.name[0] = val[0]++;
       // __state3[0].number = ++__state3;
-      SET__state3(_RN_3961673 => {
-        _RN_3961673 = Object.assign({}, _RN_3961673);
-
-        /*  __state3.eni[0] = */
-        _RN_3961673.__state3 = (() => {
-          let _var_1234 = __state2;
-          SET__state2(_var_1234 => ++_var_1234.key);
-          return ++_var_1234.key;
-        })();
-
-        tunde.left.leg = _RN_3961673.__state3;
-        eni.leg = tunde.left.leg;
-        SET__state2(_RN_2448710 => {
-          _RN_2448710 = Object.assign({}, _RN_2448710);
-          _RN_2448710.__state2[9] = eni.leg;
-          SET__state1(_RN_8574140 => {
-            _RN_8574140 = Object.assign({}, _RN_8574140);
-            _RN_8574140.__state1.key[0] = _RN_2448710.__state2[9];
-            return _RN_8574140;
+      SET__state3(_RN_641490 => {
+        _RN_641490 = Object.assign({}, _RN_641490);
+        _RN_641490.__state3 = 2;
+        SET__state2(_RN_6774130 => {
+          _RN_6774130 = Object.assign({}, _RN_6774130);
+          _RN_6774130.__state2 = _RN_641490.__state3;
+          SET__state1(_RN_35714776 => {
+            _RN_35714776 = Object.assign({}, _RN_35714776);
+            _RN_35714776.__state1 = _RN_6774130.__state2;
+            return _RN_35714776;
           });
-          return _RN_2448710;
+          return _RN_6774130;
         });
-        return _RN_3961673;
-      }); // __state3 = __state2.key;
+        return _RN_641490;
+      }); // /*  __state3.eni[0] = */ = __state3 = ++__state2.key;
+      // __state3 = __state2.key;
       // __state2 = ++__state1;
     }
   }, __state2 + " : " + __state3)));

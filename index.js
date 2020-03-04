@@ -150,7 +150,7 @@ const _nestedUpdateExpTemplate = function(
     );
   }
   if (!isNextLeftMemberExp && stateNames.indexOf(nextAssignLeft) !== -1) {
-    higerStateName = memberExpNode(nextAssignLeft, dummyVar);
+    higerStateName = memberExpNode(nextAssignLeft, higerStateName);
   }
   // console.log(
   //   "nest setstate builder: ",
@@ -257,7 +257,7 @@ const getMemberExpStateName = function(memberExp) {
   return out;
 };
 
-const _stateWithReturnTemplate = function(equivNodeRight, name) {
+const _stateWithReturnTemplate = function(equivNodeRight, name, returnExp) {
   const setStateNode = template(
     `${setStatePrefix}${name}( _var_1234 => (NODE_EQUIV) )`
   );
@@ -421,12 +421,17 @@ const expressionVisistor = {
         types.isUpdateExpression(node.right) &&
         isNodeReactState(node.right.argument)
       ) {
+        const dumVar = "_var_1234";
         const args = types.cloneNode(node.right).argument;
         const name = args.name || getMemberExpStateName(args);
         if (types.isMemberExpression(node.right.argument)) {
-          replaceStateWithDummyInMemberExp(node.right.argument, "_var_1234");
+          replaceStateWithDummyInMemberExp(
+            node.right.argument,
+            dumVar,
+            memberExpNode(name, dumVar)
+          );
         } else if (types.isIdentifier(node.right.argument)) {
-          node.right.argument.name = "_var_1234";
+          node.right.argument = memberExpNode(name, dumVar);
         }
         node.right = _stateWithReturnTemplate(
           types.cloneNode(node.right),
@@ -583,21 +588,23 @@ const expressionVisistor = {
 
   // checks and transfroms update expressions like (++i & i--)
   UpdateExpression(path) {
-    let node = path.node;
+    const node = path.node;
+    const args = node.argument;
+    // console.log("name: ", "");
     this.varName =
-      stateNames.indexOf(node.argument.name) !== -1 ? node.argument.name : null;
+      // stateNames.indexOf(node.argument.name) !== -1 ? node.argument.name : null;
+      isNodeReactState(args) ? args.name || getMemberExpStateName(args) : null;
     if (this.varName && !types.isAssignmentExpression(path.parent)) {
-      // console.log("found an update expression: ", path);
-      path.traverse(
-        {
-          Identifier(path) {
-            if (path.node.name === this.varName) {
-              path.replaceWith(types.identifier(DUMMY_NAME));
-            }
-          }
-        },
-        { varName: this.varName }
-      );
+      console.log("found an update expression: ", this.varName);
+      if (types.isMemberExpression(args)) {
+        replaceStateWithDummyInMemberExp(
+          args,
+          null,
+          memberExpNode(this.varName, DUMMY_NAME)
+        );
+      } else if (types.isIdentifier(args)) {
+        node.argument = memberExpNode(this.varName, DUMMY_NAME);
+      }
       path.replaceWith(_updateExpressionTemplate(node, this.varName));
     }
   }

@@ -165,6 +165,8 @@ const Component = props => (
 );
 ```
 
+#### Fixes
+
 #### Dependencies
 
 - [@babel/types](https://github.com/babel/babel/tree/master/packages/babel-types/src/definitions)
