@@ -56,10 +56,8 @@ const [__variable, _SET__variable] = React.useState("a word");
 
 ## Available annotations
 
-- @state (ready for testing)
-- @consumer (in dev)
-- @provider (in dev)
-- @init (in dev)
+- @state
+- @init
 
 ## Usage
 

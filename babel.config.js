@@ -9,7 +9,8 @@ if (env === "test") {
 
     return {
       presets,
-      plugins
+      plugins,
+      comments: false
     };
   };
 } else {

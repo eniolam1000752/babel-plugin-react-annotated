@@ -1,7 +1,6 @@
 import React, { Fragment } from "react";
 
-const useTestComponent = () => {
-  // @state
+function TestComponent() {
   const [{
     __state1
   }, SET__state1] = React.useState({
@@ -23,32 +22,50 @@ const useTestComponent = () => {
     __status
   }, SET__status] = React.useState({
     __status: false
-  }); // const __testState = { data: "eniola" };
-
-  //@state
+  });
   let var1 = {};
   var _value = "string";
-  return React.createElement(React.Fragment, null, React.createElement("div", null, React.createElement("div", null, __state2), React.createElement("div", {
-    onMouseDown: () => {// __state1 = ++__state3.value[0];
-      // ++__state1.val;
-    }
-  }, __state3), React.createElement("div", {
-    onClick: async () => {
-      // __testState = 3;
-      // __testState.data = __state2[
-      //   "eniola"
-      // ] = __state1 = val1.data[0] = val2[0] = value.person.name[0] = val[0]++;
-      // __state3[0].number = ++__state3;
-      // __state3 = ++__state1.val; // /*  __state3.eni[0] = */ = __state3 = ++__state2.key;
-      //@depend(__state3)
-      await (() => {
-        SET__state2(_RN_8092307 => {
-          _RN_8092307 = Object.assign({}, _RN_8092307);
-          _RN_8092307.__state2 = __state3;
-          return _RN_8092307;
+
+  function initData() {
+    console.log("data init");
+  }
+
+  const initialization = () => {
+    SET__state3(_RN_35774619 => {
+      _RN_35774619 = Object.assign({}, _RN_35774619);
+
+      _RN_35774619.__state3[0].number = (() => {
+        let _RN_35774619 = __state2.value;
+        SET__state2(_RN_35774619 => {
+          _RN_35774619 = Object.assign({}, _RN_35774619);
+          ++_RN_35774619.__state2.value;
+          return _RN_35774619;
         });
-      })(); // __state3 = __state2.key;
-      // __state2 = ++__state1;
+        return ++_RN_35774619;
+      })();
+
+      return _RN_35774619;
+    });
+  };
+
+  useEffect(() => {
+    effect;
+    return () => {
+      cleanup;
+    };
+  }, [input]);
+  React.useEffect(() => {
+    initialization(data, value, []);
+  }, []);
+  return React.createElement(React.Fragment, null, React.createElement("div", null, React.createElement("div", null, __state2), React.createElement("div", {
+    onMouseDown: () => {}
+  }, __state3), React.createElement("div", {
+    onClick: () => {
+      SET__state2(_RN_35774619 => {
+        _RN_35774619 = Object.assign({}, _RN_35774619);
+        _RN_35774619.__state2 = __state3;
+        return _RN_35774619;
+      });
     }
   }, __state2 + " : " + __state3)));
-};
+}
