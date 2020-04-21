@@ -593,7 +593,7 @@ const initExpression = function(path, transformedPath, typeExp) {
   ) {
     let componentBlock = getParentComponentOrUseFuncBlock(path);
     let childToPut = types.cloneNode(transformedPath.node);
-    console.log(path.parent);
+    // console.log(path.parent);
     // console.log(transformedPath.node);
     if (typeExp === "DECLARE") {
       if (types.isFunctionDeclaration(path.node)) {
@@ -621,21 +621,22 @@ const initExpression = function(path, transformedPath, typeExp) {
 };
 
 function putNodeInUseEffect(parentBlockExp, childNode) {
-  if (!useEffectNode) {
-    const node = template(`
-      React.useEffect(()=>{ INIT_NODES }, [])
+  // if (!useEffectNode) {
+  console.log(" *********** putting data into use effect node *********** ");
+  const node = template(`
+      React.useEffect(()=>{ INIT_NODES; console.log('eniola')  }, [])
       `)({
-      INIT_NODES: childNode
-    });
-    parentBlockExp.body = parentBlockExp.body.reduce(
-      (cum, item) =>
-        types.isReturnStatement(item) ? [...cum, node, item] : [...cum, item],
-      []
-    );
-    useEffectNode = node;
-  } else {
-    useEffectNode.expression.arguments[0].body.body.push(childNode);
-  }
+    INIT_NODES: childNode
+  });
+  parentBlockExp.body = parentBlockExp.body.reduce(
+    (cum, item) =>
+      types.isReturnStatement(item) ? [...cum, node, item] : [...cum, item],
+    []
+  );
+  useEffectNode = node;
+  // } else {
+  //   useEffectNode.expression.arguments[0].body.body.push(childNode);
+  // }
 }
 
 const getParentComponentOrUseFuncBlock = function(path) {

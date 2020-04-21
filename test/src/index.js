@@ -10,24 +10,16 @@ function TestComponent() {
   let var1 = {};
   var _value = "string";
 
- 
   function initData() {
     console.log("data init");
   }
-  const initialization = () => {
+  //@init(3)
+  const initialization = data => {
     __state3[0].number = ++__state2.value;
   };
-  
-  //@init
-  initialization(data, value, []);
 
   //@init
-  useEffect(() => {
-    effect;
-    return () => {
-      cleanup;
-    };
-  }, [input]);
+  __state1 = { val: 90 };
 
   return (
     <React.Fragment>
@@ -54,8 +46,7 @@ function TestComponent() {
             // __state3 = __state2.key;
 
             __state2 = __state3;
-            // // @initiji
-            // __state2 = ++__state1;
+            __state2 = ++__state1;
           }}
         >
           {/* {__status}, {__testState.data},{__state3[6]} */}

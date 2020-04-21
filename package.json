@@ -2,11 +2,11 @@
   "name": "babel-plugin-react-annotated",
   "repository": "eniolam1000752/babel-plugin-react-annotated",
   "version": "1.0.3",
-  "license": "MIT",
+  "license": "ISC",
   "description": "annotates react statments with flow like annotations (eg. '//@state', //@init)  providing for shorter code on development",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
+    "test": "node ./test/testScript",
     "build": "npx babel ./test/src --out-dir ./test/out",
     "build-script": "npx babel ./babel-plugin/react-annotated.js --out-dir ./babel-plugin/build",
     "config-init": " cd init && node init_to_webpack.js && cd ../",
@@ -14,18 +14,17 @@
   },
   "keywords": [
     "@state",
-    "@init",
-    "@consumer",
-    "@provider"
+    "@init"
   ],
   "author": "Eniola ifeoluwa olatunji",
-  "license": "ISC",
   "devDependencies": {
     "@babel/cli": "^7.7.7",
     "@babel/core": "^7.7.7",
     "@babel/plugin-syntax-jsx": "^7.2.0",
     "@babel/preset-env": "^7.7.7",
     "@babel/preset-react": "^7.7.0",
-    "babylon": "^6.18.0"
+    "babel-plugin-tester": "^8.0.1",
+    "babylon": "^6.18.0",
+    "jest": "^25.1.0"
   }
 }

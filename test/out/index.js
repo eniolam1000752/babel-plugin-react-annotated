@@ -31,40 +31,56 @@ function TestComponent() {
   }
 
   const initialization = () => {
-    SET__state3(_RN_35774619 => {
-      _RN_35774619 = Object.assign({}, _RN_35774619);
+    SET__state3(_RN_6079223 => {
+      _RN_6079223 = Object.assign({}, _RN_6079223);
 
-      _RN_35774619.__state3[0].number = (() => {
-        let _RN_35774619 = __state2.value;
-        SET__state2(_RN_35774619 => {
-          _RN_35774619 = Object.assign({}, _RN_35774619);
-          ++_RN_35774619.__state2.value;
-          return _RN_35774619;
+      _RN_6079223.__state3[0].number = (() => {
+        let _RN_6079223 = __state2.value;
+        SET__state2(_RN_6079223 => {
+          _RN_6079223 = Object.assign({}, _RN_6079223);
+          ++_RN_6079223.__state2.value;
+          return _RN_6079223;
         });
-        return ++_RN_35774619;
+        return ++_RN_6079223;
       })();
 
-      return _RN_35774619;
+      return _RN_6079223;
     });
   };
 
-  useEffect(() => {
-    effect;
-    return () => {
-      cleanup;
-    };
-  }, [input]);
   React.useEffect(() => {
-    initialization(data, value, []);
+    SET__state1(_RN_6079223 => {
+      _RN_6079223 = Object.assign({}, _RN_6079223);
+      _RN_6079223.__state1 = {
+        val: 90
+      };
+      return _RN_6079223;
+    });
+    console.log('eniola');
   }, []);
   return React.createElement(React.Fragment, null, React.createElement("div", null, React.createElement("div", null, __state2), React.createElement("div", {
     onMouseDown: () => {}
   }, __state3), React.createElement("div", {
     onClick: () => {
-      SET__state2(_RN_35774619 => {
-        _RN_35774619 = Object.assign({}, _RN_35774619);
-        _RN_35774619.__state2 = __state3;
-        return _RN_35774619;
+      SET__state2(_RN_6079223 => {
+        _RN_6079223 = Object.assign({}, _RN_6079223);
+        _RN_6079223.__state2 = __state3;
+        return _RN_6079223;
+      });
+      SET__state2(_RN_6079223 => {
+        _RN_6079223 = Object.assign({}, _RN_6079223);
+
+        _RN_6079223.__state2 = (() => {
+          let _RN_6079223 = __state1;
+          SET__state1(_RN_6079223 => {
+            _RN_6079223 = Object.assign({}, _RN_6079223);
+            ++_RN_6079223.__state1;
+            return _RN_6079223;
+          });
+          return ++_RN_6079223;
+        })();
+
+        return _RN_6079223;
       });
     }
   }, __state2 + " : " + __state3)));
