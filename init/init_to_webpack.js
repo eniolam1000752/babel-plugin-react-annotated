@@ -8,7 +8,7 @@ const replacementConfig = `
             * on dev
             */
             {
-              test: /\.(jsx|tsx|js|ts)$/,
+              test: /\.(jsx)$/,
               include: paths.appSrc,
               exclude:/node_modules/,
               loader: require.resolve("babel-loader"),
@@ -18,6 +18,22 @@ const replacementConfig = `
                 configFile: false,
                 plugins: [[${transfromPath}, {}], ["@babel/plugin-proposal-class-properties"]],
                 presets: [["@babel/preset-react"]],
+               
+                // cacheDirectory: true,
+                // cacheCompression: false,
+                // compact: isEnvProduction,
+              }
+            },{
+              test: /\.(tsx)$/,
+              include: paths.appSrc,
+              exclude:/node_modules/,
+              loader: require.resolve("babel-loader"),
+              options: {
+                // @remove-on-eject-begin
+                babelrc: false,
+                configFile: false,
+                plugins: [[${transfromPath}, {}], ["@babel/plugin-proposal-class-properties"]],
+                presets: [require.resolve('babel-preset-react-app')],
                
                 // cacheDirectory: true,
                 // cacheCompression: false,
