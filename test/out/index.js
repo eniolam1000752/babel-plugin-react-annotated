@@ -25,62 +25,67 @@ function TestComponent() {
   });
   let var1 = {};
   var _value = "string";
+  const obj = {
+    ljksd: 3
+  };
 
   function initData() {
     console.log("data init");
   }
 
   const initialization = data => {
-    SET__state3(_RN_6819158 => {
-      _RN_6819158 = Object.assign({}, _RN_6819158);
+    SET__state3(_RN_43639750 => {
+      _RN_43639750 = Object.assign({}, _RN_43639750);
 
-      _RN_6819158.__state3[0].number = (() => {
-        let _RN_6819158 = __state2.value;
-        SET__state2(_RN_6819158 => {
-          _RN_6819158 = Object.assign({}, _RN_6819158);
-          ++_RN_6819158.__state2.value;
-          return _RN_6819158;
+      _RN_43639750.__state3[0].number = (() => {
+        let _RN_43639750 = __state2.value;
+        SET__state2(_RN_43639750 => {
+          _RN_43639750 = Object.assign({}, _RN_43639750);
+          ++_RN_43639750.__state2.value;
+          return _RN_43639750;
         });
-        return ++_RN_6819158;
+        return ++_RN_43639750;
       })();
 
-      return _RN_6819158;
+      return _RN_43639750;
     });
   };
 
   React.useEffect(() => {
-    SET__state1(_RN_6819158 => {
-      _RN_6819158 = Object.assign({}, _RN_6819158);
-      _RN_6819158.__state1 = {
+    initialization(_state3, 89);
+  }, []);
+  React.useEffect(() => {
+    SET__state1(_RN_43639750 => {
+      _RN_43639750 = Object.assign({}, _RN_43639750);
+      _RN_43639750.__state1 = {
         val: 90
       };
-      return _RN_6819158;
+      return _RN_43639750;
     });
-    console.log('eniola');
   }, []);
   return React.createElement(React.Fragment, null, React.createElement("div", null, React.createElement("div", null, __state2), React.createElement("div", {
     onMouseDown: () => {}
   }, __state3), React.createElement("div", {
     onClick: () => {
-      SET__state2(_RN_6819158 => {
-        _RN_6819158 = Object.assign({}, _RN_6819158);
-        _RN_6819158.__state2 = __state3;
-        return _RN_6819158;
+      SET__state2(_RN_43639750 => {
+        _RN_43639750 = Object.assign({}, _RN_43639750);
+        _RN_43639750.__state2 = __state3;
+        return _RN_43639750;
       });
-      SET__state2(_RN_6819158 => {
-        _RN_6819158 = Object.assign({}, _RN_6819158);
+      SET__state2(_RN_43639750 => {
+        _RN_43639750 = Object.assign({}, _RN_43639750);
 
-        _RN_6819158.__state2 = (() => {
-          let _RN_6819158 = __state1;
-          SET__state1(_RN_6819158 => {
-            _RN_6819158 = Object.assign({}, _RN_6819158);
-            ++_RN_6819158.__state1;
-            return _RN_6819158;
+        _RN_43639750.__state2 = (() => {
+          let _RN_43639750 = __state1;
+          SET__state1(_RN_43639750 => {
+            _RN_43639750 = Object.assign({}, _RN_43639750);
+            ++_RN_43639750.__state1;
+            return _RN_43639750;
           });
-          return ++_RN_6819158;
+          return ++_RN_43639750;
         })();
 
-        return _RN_6819158;
+        return _RN_43639750;
       });
     }
   }, __state2 + " : " + __state3)));

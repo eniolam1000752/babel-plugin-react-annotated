@@ -9,12 +9,13 @@ function TestComponent() {
 
   let var1 = {};
   var _value = "string";
+  const obj = { ljksd: 3 };
 
   function initData() {
     console.log("data init");
   }
-  //@init(3)
-  const initialization = data => {
+  //@init(_state3, 89)
+  const initialization = (data) => {
     __state3[0].number = ++__state2.value;
   };
 
