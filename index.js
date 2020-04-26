@@ -16,11 +16,11 @@ let useEffectNode = null;
 const _useStateTemplate = function(initValueNode, idText) {
   // const leftExpression = types.arrayPattern([
   //   types.identifier(idText),
-  //   types.identifier(`${setStatePrefix}${idText}`)
+  types.identifier(`${setStatePrefix}${idText}`);
   // ]);
 
   const objectConstruct = types.objectExpression([
-    types.objectProperty(types.identifier(idText), initValueNode)
+    types.objectProperty(types.identifier(idText), initValueNode),
   ]);
 
   const leftExpression = types.arrayPattern([
@@ -30,9 +30,9 @@ const _useStateTemplate = function(initValueNode, idText) {
         types.identifier(idText),
         false,
         true
-      )
+      ),
     ]),
-    types.identifier(`${setStatePrefix}${idText}`)
+    types.identifier(`${setStatePrefix}${idText}`),
   ]);
 
   const RightExpression = types.callExpression(
@@ -53,7 +53,7 @@ const _updateExpressionTemplate = function(updateNode, trueVarName) {
 
   return buildASTNode({
     UPDATE_EXP: [clonedStateExp(), updateNode],
-    STATE_NAME: DUMMY_NAME
+    STATE_NAME: DUMMY_NAME,
   });
 };
 
@@ -115,7 +115,7 @@ const _updateExpressionTemplate2 = (
   return buildASTNode({
     UPDATE_EXP: [clonedStateExp(dummyVar), updateNode],
     NEST_STATE_NODE: nestNode,
-    STATE_NAME: dummyVar
+    STATE_NAME: dummyVar,
   });
 };
 
@@ -169,7 +169,7 @@ const _nestedUpdateExpTemplate = function(
     HIGH_STATE_NAME: temp2,
     NEST_STATE_NODE: nestNode,
     STATE_NAME: dummyVar,
-    STATE_CLONE: clonedStateExp(dummyVar)
+    STATE_CLONE: clonedStateExp(dummyVar),
   };
   if (isLeftMemberExp) {
     // replaceStateWithDummyInMemberExp(leftExpClone, dummyVar);
@@ -187,7 +187,7 @@ const _nestedUpdateExpTemplate = function(
           MEMBER_STATE_NAME: memberExpNode(
             trueVar.name || getMemberExpStateName(trueVar),
             dummyVar
-          )
+          ),
         }
       : { ...out, LEFT_EXP: leftExpClone }
   );
@@ -233,7 +233,7 @@ const assignmentTemplate = function(leftNode, rightNode, LONA, node) {
       ? !isNextLeftMemberExp
         ? rightNode
         : leftNodeOfNextAssignment
-      : rightNode
+      : rightNode,
   };
 
   if (node && node.operator !== "=") {
@@ -253,13 +253,13 @@ const _stateWithReturnTemplate = function(equivNodeRight, name, nameExp) {
     `${setStatePrefix}${name}( ARGS => { NODE_EQUIV; return ARGS;  })`
   );
   const declare1 = types.variableDeclaration("let", [
-    types.variableDeclarator(types.identifier(DUMMY_NAME), nameExp.argument)
+    types.variableDeclarator(types.identifier(DUMMY_NAME), nameExp.argument),
   ]);
   const tempNode = types.cloneNode(equivNodeRight);
   tempNode.argument = types.identifier(DUMMY_NAME);
   const declare2 = setStateNode({
     NODE_EQUIV: [clonedStateExp(), types.expressionStatement(equivNodeRight)],
-    ARGS: DUMMY_NAME
+    ARGS: DUMMY_NAME,
   });
   const declare3 = types.returnStatement(tempNode);
   const block = types.blockStatement([declare1, declare2, declare3]);
@@ -334,7 +334,7 @@ const declarationVisitor = {
       checkAnnotatedSyntax(node, path);
       cleanUpAnnotations(node);
     }
-  }
+  },
 };
 
 const expressionVisistor = {
@@ -357,7 +357,7 @@ const expressionVisistor = {
                 memberExpNode(this.varName) /* types.identifier(DUMMY_NAME) */
               );
             }
-          }
+          },
         },
         { varName: this.varName }
       );
@@ -397,7 +397,7 @@ const expressionVisistor = {
       let resultAssignNode = null;
       let higherState = null;
 
-      let reculsive = assignNode => {
+      let reculsive = (assignNode) => {
         if (
           types.isAssignmentExpression(assignNode.right) &&
           stateNames.indexOf(
@@ -430,7 +430,7 @@ const expressionVisistor = {
                     higherState,
                     assignNode.right.left
                   ),
-                  resultAssignNode
+                  resultAssignNode,
                 ]
               : [
                   assignmentTemplate(
@@ -438,7 +438,7 @@ const expressionVisistor = {
                     higherState,
                     assignNode.right.left
                   ),
-                  ...resultAssignNode
+                  ...resultAssignNode,
                 ];
           // console.log("result exp: ", types.cloneNode(resultAssignNode));
           reculsive(assignNode.right);
@@ -485,12 +485,12 @@ const expressionVisistor = {
                 ? [
                     assignmentTemplate(higherStateNode, assignNode.right),
                     assignmentTemplate(leftNode, higherState, null, assignNode),
-                    resultAssignNode
+                    resultAssignNode,
                   ]
                 : [
                     assignmentTemplate(higherStateNode, assignNode.right),
                     assignmentTemplate(leftNode, higherState, null, assignNode),
-                    ...resultAssignNode
+                    ...resultAssignNode,
                   ];
           }
         }
@@ -529,7 +529,7 @@ const expressionVisistor = {
                 )
               );
             }
-          }
+          },
         },
         { varName: this.varName, assignmentPath: path }
       );
@@ -578,55 +578,72 @@ const expressionVisistor = {
     if (!(types.isIdentifier(callee) && /^use/.test(callee.name))) {
       initExpression({ ...path }, path);
     }
-  }
+  },
 };
 
-const initExpression = function(path, transformedPath, typeExp) {
+function initAnnotationParser(annotation) {
+  let params = annotation.match(/(?<=(\()).*(?=(\)))/g)[0].split(",");
+  params = params.length === 1 && params[0] === "" ? [] : params;
+  params = params
+    .filter((item, index) => {
+      return types.isExpressionStatement(template(item)());
+    })
+    .map((item) => template(item)().expression);
+  console.log("PARAMETERS TO BE PARSED: ", params);
+  return params;
+}
+
+function initExpression(path, transformedPath, typeExp) {
   const expStatement = typeExp === "DECLARE" ? path.node : path.parent;
   const immidateTopComment = expStatement.leadingComments
     ? expStatement.leadingComments[expStatement.leadingComments.length - 1]
     : null;
   if (
     immidateTopComment &&
-    /\s*@init\s*$/.test(immidateTopComment.value) &&
+    /\s*@init\s*(\(.*\))?\s*$/.test(immidateTopComment.value) &&
     immidateTopComment.type === "CommentLine"
   ) {
     let componentBlock = getParentComponentOrUseFuncBlock(path);
     let childToPut = types.cloneNode(transformedPath.node);
     // console.log(path.parent);
     // console.log(transformedPath.node);
-    if (typeExp === "DECLARE") {
-      if (types.isFunctionDeclaration(path.node)) {
-        childToPut = types.callExpression(
-          types.identifier(path.node.id.name),
-          []
-        );
-      }
-      if (types.isVariableDeclaration(path.node)) {
-        // console.log("variable declarator", path.node);
-        if (
-          types.isArrowFunctionExpression(path.node.declarations[0].init) ||
-          types.isFunctionExpression(path.node.declarations[0].init)
-        ) {
-          childToPut = types.callExpression(
-            types.identifier(path.node.declarations[0].id.name),
-            []
-          );
-        }
-      }
+    // if (typeExp === "DECLARE") {
+    if (typeExp === "DECLARE" && types.isFunctionDeclaration(path.node)) {
+      childToPut = types.callExpression(
+        types.identifier(path.node.id.name),
+        initAnnotationParser(immidateTopComment.value)
+      );
     }
+    if (
+      typeExp === "DECLARE" &&
+      types.isVariableDeclaration(path.node) &&
+      (types.isArrowFunctionExpression(path.node.declarations[0].init) ||
+        types.isFunctionExpression(path.node.declarations[0].init))
+    ) {
+      // console.log("variable declarator", path.node);
+      // if (
+      //   types.isArrowFunctionExpression(path.node.declarations[0].init) ||
+      //   types.isFunctionExpression(path.node.declarations[0].init)
+      // ) {
+      childToPut = types.callExpression(
+        types.identifier(path.node.declarations[0].id.name),
+        initAnnotationParser(immidateTopComment.value)
+      );
+      // }
+    }
+    // }
     putNodeInUseEffect(componentBlock, childToPut);
     if (typeExp !== "DECLARE") transformedPath.remove();
   }
-};
+}
 
 function putNodeInUseEffect(parentBlockExp, childNode) {
   // if (!useEffectNode) {
   console.log(" *********** putting data into use effect node *********** ");
   const node = template(`
-      React.useEffect(()=>{ INIT_NODES; console.log('eniola')  }, [])
+      React.useEffect(()=>{ INIT_NODES; }, [])
       `)({
-    INIT_NODES: childNode
+    INIT_NODES: childNode,
   });
   parentBlockExp.body = parentBlockExp.body.reduce(
     (cum, item) =>
@@ -688,7 +705,7 @@ const replaceStateWithDummyInMemberExp = (
   dummyVar,
   overrideVarNode
 ) => {
-  let func = exp => {
+  let func = (exp) => {
     if (types.isMemberExpression(exp.object)) {
       func(exp.object);
     } else {
@@ -700,12 +717,12 @@ const replaceStateWithDummyInMemberExp = (
 
 const cleanUpAnnotations = function(node) {
   node.leadingComments = node.leadingComments
-    ? node.leadingComments.filter(item => {
+    ? node.leadingComments.filter((item) => {
         return !item.value.match(/^@\w+$/) ? item : null;
       })
     : null;
   node.trailingComments = node.trailingComments
-    ? node.trailingComments.filter(item =>
+    ? node.trailingComments.filter((item) =>
         !item.value.match(/^@\w+$/) ? item : null
       )
     : null;
@@ -713,7 +730,7 @@ const cleanUpAnnotations = function(node) {
 
 const getMemberExpStateName = function(memberExp) {
   let out = null;
-  let func = exp => {
+  let func = (exp) => {
     if (types.isMemberExpression(exp.object)) {
       func(exp.object);
     } else {
@@ -798,7 +815,7 @@ function astTransfromFunction() {
     name: "react annnotated",
     pre() {},
     visitor: visitors,
-    post(state) {}
+    post(state) {},
   };
 }
 

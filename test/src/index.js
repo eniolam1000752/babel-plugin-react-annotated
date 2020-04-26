@@ -1,42 +1,43 @@
-import React, { Fragment } from "react";
+import React from "react";
 
-function TestComponent() {
+const useestComponent = function() {
   // @state
-  let __state1 = { val: 3 },
-    __state2 = {},
-    __state3 = [],
-    __status = false;
+  let state1 = { val: 3 },
+    state2 = {},
+    state3 = [],
+    status = false;
 
+  //@state
   let var1 = {};
+  //@state
   var _value = "string";
-  const obj = { ljksd: 3 };
 
   function initData() {
     console.log("data init");
   }
-  //@init(_state3, 89)
+  //@init(_state3, 89,'eniola')
   const initialization = (data) => {
-    __state3[0].number = ++__state2.value;
+    state3[0].number = ++state2.value;
   };
 
   //@init
-  __state1 = { val: 90 };
+  state1 = { val: 90 };
 
   return (
     <React.Fragment>
       <div>
-        <div>{__state2}</div>
+        <div>{state2}</div>
         <div
           onMouseDown={() => {
             // __state1 = ++__state3.value[0];
             // ++__state1.val;
           }}
         >
-          {__state3}
+          {state3}
         </div>
         <div
-          onClick={() => {
-            // __testState = 3;
+          onClick={function() {
+            let state1 = { val: 3 };
             // //@init
             // __testState.data = __state2[
             //   "eniola"
@@ -45,15 +46,16 @@ function TestComponent() {
             // __state3 = ++__state1.val; // /*  __state3.eni[0] = */ = __state3 = ++__state2.key;
             // __state1 = __state2;
             // __state3 = __state2.key;
-
-            __state2 = __state3;
-            __state2 = ++__state1;
+            // state3 = ++state1;
+            // state2.value.val[0] = state1.val = state3.value.val.num[
+            //   "kjsd"
+            // ][0] = ++var1;
           }}
         >
           {/* {__status}, {__testState.data},{__state3[6]} */}
-          {__state2 + " : " + __state3}
+          {/* {__state2 + " : " + __state3} */}
         </div>
       </div>
     </React.Fragment>
   );
-}
+};
