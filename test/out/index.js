@@ -39,10 +39,10 @@ const useestComponent = function () {
   }
 
   const initialization = data => {
-    SET__state3(_RN_6349306 => {
-      _RN_6349306 = Object.assign({}, _RN_6349306);
-      _RN_6349306.state3[0].number = ++state2.value;
-      return _RN_6349306;
+    SET__state3(_RN_17443054 => {
+      _RN_17443054 = JSON.parse(JSON.stringify(_RN_17443054));
+      _RN_17443054.state3[0].number = ++state2.value;
+      return _RN_17443054;
     });
   };
 
@@ -50,12 +50,12 @@ const useestComponent = function () {
     initialization(_state3, 89, 'eniola');
   }, []);
   React.useEffect(() => {
-    SET__state1(_RN_6349306 => {
-      _RN_6349306 = Object.assign({}, _RN_6349306);
-      _RN_6349306.state1 = {
+    SET__state1(_RN_17443054 => {
+      _RN_17443054 = JSON.parse(JSON.stringify(_RN_17443054));
+      _RN_17443054.state1 = {
         val: 90
       };
-      return _RN_6349306;
+      return _RN_17443054;
     });
   }, []);
   return React.createElement(React.Fragment, null, React.createElement("div", null, React.createElement("div", null, state2), React.createElement("div", {
@@ -65,26 +65,10 @@ const useestComponent = function () {
       let state1 = {
         val: 3
       };
-      SET__state3(_RN_6577964 => {
-        _RN_6577964 = Object.assign({}, _RN_6577964);
-
-        _RN_6577964.state3.value.val.num["kjsd"][0] = (() => {
-          let _RN_6349306 = var1;
-          SET__var1(_RN_6349306 => {
-            _RN_6349306 = Object.assign({}, _RN_6349306);
-            ++_RN_6349306;
-            return _RN_6349306;
-          });
-          return ++_RN_6349306;
-        })();
-
-        state1.val = _RN_6577964.state3.value.val.num["kjsd"][0];
-        SET__state2(_RN_3017568 => {
-          _RN_3017568 = Object.assign({}, _RN_3017568);
-          _RN_3017568.state2.value.val[0] = state1.val;
-          return _RN_3017568;
-        });
-        return _RN_6577964;
+      SET__state2(_RN_17443054 => {
+        _RN_17443054 = JSON.parse(JSON.stringify(_RN_17443054));
+        _RN_17443054.state2.age = _RN_17443054.state2.age + 10;
+        return _RN_17443054;
       });
     }
   })));

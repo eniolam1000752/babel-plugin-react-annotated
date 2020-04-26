@@ -28,13 +28,9 @@ const replacementConfig = `
 const runScripts = () => {
   try {
     const data = fs.readFileSync(webPackConfigPath).toString();
-    if (
-      /* data.indexOf(replacementConfig) === -1 */ !new RegExp(
-        `plugins: \\[\\['${transfromPath}', {}\\]`
-      ).test(data)
-    ) {
+    if (!new RegExp(`plugins: \\[\\['${transfromPath}', {}\\]`).test(data)) {
       console.log(
-        "Did not find react-annotated plugin in webpack.config. adding to config <<<<"
+        "Did not find react-annotated plugin in webpack.config. Adding to config <<<<"
       );
       fs.writeFileSync(
         webPackConfigPath,
@@ -42,7 +38,7 @@ const runScripts = () => {
       );
     } else {
       console.log(
-        "found react-annotated config in webpack.config. skipping >>>>"
+        "found react-annotated config in webpack.config. Skipping >>>>"
       );
     }
   } catch (exp) {

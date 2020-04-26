@@ -64,10 +64,18 @@ const clonedStateExp = function(varName) {
       types.identifier(varName || DUMMY_NAME),
       types.callExpression(
         types.memberExpression(
-          types.identifier("Object"),
-          types.identifier("assign")
+          types.identifier("JSON"),
+          types.identifier("parse")
         ),
-        [types.objectExpression([]), types.identifier(varName || DUMMY_NAME)]
+        [
+          types.callExpression(
+            types.memberExpression(
+              types.identifier("JSON"),
+              types.identifier("stringify")
+            ),
+            [types.identifier(varName || DUMMY_NAME)]
+          ),
+        ]
       )
     )
   );

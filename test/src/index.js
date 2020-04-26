@@ -50,6 +50,8 @@ const useestComponent = function() {
             // state2.value.val[0] = state1.val = state3.value.val.num[
             //   "kjsd"
             // ][0] = ++var1;
+            
+            state2.age = state2.age + 10;
           }}
         >
           {/* {__status}, {__testState.data},{__state3[6]} */}
