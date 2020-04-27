@@ -39,10 +39,10 @@ const useestComponent = function () {
   }
 
   const initialization = data => {
-    SET__state3(_RN_17443054 => {
-      _RN_17443054 = JSON.parse(JSON.stringify(_RN_17443054));
-      _RN_17443054.state3[0].number = ++state2.value;
-      return _RN_17443054;
+    SET__state3(_RN_9650556 => {
+      _RN_9650556 = JSON.parse(JSON.stringify(_RN_9650556));
+      _RN_9650556.state3[0].number = ++state2.value;
+      return _RN_9650556;
     });
   };
 
@@ -50,12 +50,12 @@ const useestComponent = function () {
     initialization(_state3, 89, 'eniola');
   }, []);
   React.useEffect(() => {
-    SET__state1(_RN_17443054 => {
-      _RN_17443054 = JSON.parse(JSON.stringify(_RN_17443054));
-      _RN_17443054.state1 = {
+    SET__state1(_RN_9650556 => {
+      _RN_9650556 = JSON.parse(JSON.stringify(_RN_9650556));
+      _RN_9650556.state1 = {
         val: 90
       };
-      return _RN_17443054;
+      return _RN_9650556;
     });
   }, []);
   return React.createElement(React.Fragment, null, React.createElement("div", null, React.createElement("div", null, state2), React.createElement("div", {
@@ -65,11 +65,15 @@ const useestComponent = function () {
       let state1 = {
         val: 3
       };
-      SET__state2(_RN_17443054 => {
-        _RN_17443054 = JSON.parse(JSON.stringify(_RN_17443054));
-        _RN_17443054.state2.age = _RN_17443054.state2.age + 10;
-        return _RN_17443054;
-      });
+
+      (async () => {
+        SET__state2(_RN_9650556 => {
+          _RN_9650556 = JSON.parse(JSON.stringify(_RN_9650556));
+          _RN_9650556.state2.age = _RN_9650556.state2.age + 10;
+          return _RN_9650556;
+        });
+        ++state1.val;
+      })();
     }
   })));
 };

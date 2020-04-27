@@ -38,11 +38,9 @@ const useestComponent = function() {
         <div
           onClick={function() {
             let state1 = { val: 3 };
-            // //@init
             // __testState.data = __state2[
             //   "eniola"
             // ] = __state1 = val1.data[0] = val2[0] = value.person.name[0] = val[0]++;
-            //@init
             // __state3 = ++__state1.val; // /*  __state3.eni[0] = */ = __state3 = ++__state2.key;
             // __state1 = __state2;
             // __state3 = __state2.key;
@@ -50,8 +48,12 @@ const useestComponent = function() {
             // state2.value.val[0] = state1.val = state3.value.val.num[
             //   "kjsd"
             // ][0] = ++var1;
-            
-            state2.age = state2.age + 10;
+
+            //@zone
+            {
+              state2.age = state2.age + 10;
+              ++state1.val;
+            }
           }}
         >
           {/* {__status}, {__testState.data},{__state3[6]} */}
