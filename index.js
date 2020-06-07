@@ -348,7 +348,7 @@ function isIdentifierReactState(path, varName) {
   // }
   if (!isNodeReactState(varName)) return 0;
 
-  console.log(varName);
+  // console.log(varName);
   if (scope && bindings[varName]) {
     const parentNode = scope.path.parent;
     let isReactComponentBlock = false;
@@ -547,7 +547,7 @@ const expressionVisistor = {
 
             higherStateNode = types.identifier(higherState);
 
-            console.log(assignNode.right.argument);
+            // console.log(assignNode.right.argument);
             if (
               types.isUpdateExpression(assignNode.right) &&
               isIdentifierReactState(
@@ -712,6 +712,23 @@ const expressionVisistor = {
       initExpression({ ...path }, path);
     }
   },
+  BlockStatement(path) {
+    const node = path.node;
+    const immidateTopComment = node.leadingComments
+      ? node.leadingComments[node.leadingComments.length - 1]
+      : null;
+    if (immidateTopComment && /^@zone\s*$/.test(immidateTopComment.value)) {
+      path.replaceWith(
+        types.expressionStatement(
+          types.callExpression(
+            types.arrowFunctionExpression([], node, true),
+            []
+          )
+        )
+      );
+    }
+    // console.log("comments: ", immidateTopComment);
+  },
 };
 
 function initAnnotationParser(annotation) {
@@ -722,7 +739,7 @@ function initAnnotationParser(annotation) {
       return types.isExpressionStatement(template(item)());
     })
     .map((item) => template(item)().expression);
-  console.log("PARAMETERS TO BE PARSED: ", params);
+  // console.log("PARAMETERS TO BE PARSED: ", params);
   return params;
 }
 
@@ -772,7 +789,7 @@ function initExpression(path, transformedPath, typeExp) {
 
 function putNodeInUseEffect(parentBlockExp, childNode) {
   // if (!useEffectNode) {
-  console.log(" *********** putting data into use effect node *********** ");
+  // console.log(" *********** putting data into use effect node *********** ");
   const node = template(`
       React.useEffect(()=>{ INIT_NODES; }, [])
       `)({
