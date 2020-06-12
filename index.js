@@ -895,9 +895,13 @@ const getMemberExpStateName = function(memberExp) {
 };
 
 const isNodeReactState = function(node) {
-  return typeof node === "string"
-    ? stateNames.indexOf(node) !== -1
-    : stateNames.indexOf(node.name || getMemberExpStateName(node)) !== -1;
+  if (node) {
+    return typeof node === "string"
+      ? stateNames.indexOf(node) !== -1
+      : stateNames.indexOf(node.name || getMemberExpStateName(node)) !== -1;
+  } else {
+    return false;
+  }
 };
 
 const memberExpNode = function(stateName, varName) {
