@@ -633,7 +633,7 @@ const expressionVisistor = {
       }
     }
 
-    // checks and perform transfroms on assignments whose right is an object with a property to update eg (object.propery = 3)
+    // checks and perform transfroms on assignments whose left is an object with a property to update eg (object.propery = 3)
     if (
       types.isMemberExpression(node.left) &&
       !types.isAssignmentExpression(path.parent) &&

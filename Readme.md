@@ -20,16 +20,16 @@ const Component = () => (
 /* react state declaration */
 
 //@state
-let __count = 0;
+let count = 0;
 
 /* variable usage */
 const Component = () => (
   <div
     onClick={function() {
-      ++__count;
+      ++count;
     }}
   >
-    Counting Number: {__count}
+    Counting Number: {count}
   </div>
 );
 ```
@@ -42,10 +42,10 @@ react-annotated is a babel plugin providing transformation of annotated declarat
 
 ```jsx
 //@state
-let __variable = "a word";
+let variable = "a word";
 
 /* transforms to */
-const [__variable, _SET__variable] = React.useState("a word");
+const [{ variable }, _SET__variable] = React.useState({ variable: "a word" });
 ```
 
 ## Installation
@@ -65,36 +65,35 @@ Note: react-annotated works for only functional react not classes.
 
 #### Creating a react state
 
-Declaring a react state is as simple as declaring a javascript variable though it's requires the following;
+Declaring a react state is as simple as declaring a javascript variable though it's requires;
 
-- A single line comment annotation with the @ prefix at the top of the declaration.
-- A double underscore for variable name.
+- A single line comment annotation with the @ prefix at the top of the declaration (just like a flow annotation).
 
 ##### single state declaration
 
 ```jsx
 //@state
-let __varable = 0;
+let varable = 0;
 ```
 
 ##### multiple state declaration
 
 ```jsx
     //@state
-    let __varable = 0,
-	    __variable2 = 'string',
-	    __variable 3 = {},
-	    __varaible4 = [];
+    let varable = 0,
+	    variable2 = 'string',
+	    variable 3 = {},
+	    varaible4 = [];
 ```
 
 #### Using a react state
 
 ```jsx
 //@state
-let __variable = 0;
+let variable = 0;
 
-const Component = props => {
-  return <div>{__variable} </div>;
+const Component = (props) => {
+  return <div>{variable} </div>;
 };
 
 /* output */
@@ -114,15 +113,15 @@ This can either be
 
 ```jsx
 //@state
-let __variable = 0;
+let variable = 0;
 
-const Component = props => (
+const Component = (props) => (
   <div
     onClick={function() {
-      ++__variable;
+      ++variable;
     }}
   >
-    Counting Number: {__variable}
+    Counting Number: {variable}
   </div>
 );
 ```
@@ -131,15 +130,19 @@ const Component = props => (
 
 ```jsx
 //@state
-let __variable = 0;
+let variable = 0;
+//@state
+let obj = { keyVar: "" };
 
-const Component = props => (
+const Component = (props) => (
   <div
     onClick={() => {
-      __variable = "new value as string";
+      variable = "new value as string";
+      obj.keyVar = "new value";
     }}
   >
-    Counting Number: {__variable}
+    Counting Number: {variable}
+    object value for key (keyVar): {obj.keyVar}
   </div>
 );
 ```
@@ -148,22 +151,52 @@ const Component = props => (
 
 ```jsx
 //@state
-let __variable = 0,
-  __variable2 = 3;
+let variable = 0;
+//@state
+let variable2 = 3;
+//@state
+let obj = { keyVar: 0 };
+
 let nonState = 5;
 
-const Component = props => (
+const Component = (props) => (
   <div
     onClick={() => {
-      __variable = __variable2 = ++nonState;
+      obj.keyVar = variable = variable2 = ++nonState;
     }}
   >
-    Counting Number: {__variable}
+    Counting Number 1: {variable}
+    Counting Number 2: {variable2}
+    Counting Number 3: {obj.keyVar}
   </div>
 );
 ```
 
-#### Fixes
+### @init annotation
+
+Making a function/arrow function decleration execute at the begining of a component rending is as easy as just annotating the function with @init
+
+```jsx
+//@init
+function runInitially() {
+  console.log("i ran when the component was mounted and would not run again");
+}
+```
+
+if the decleared function takes an argument then the following can be done
+
+```jsx
+//@init('arg1', 3, {}, [])
+function runInitiallyWithArguments(stringArg, numberArg, objectArg, arrayArg) {
+  console.log(
+    "i ran when the component was mounted but with this arguments: ",
+    stringArg,
+    numberArg,
+    objectArg,
+    arrayArg
+  );
+}
+```
 
 #### Dependencies
 

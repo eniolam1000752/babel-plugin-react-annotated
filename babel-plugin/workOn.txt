@@ -1,0 +1,6 @@
+issues
+
+can not set state for memeber expression as value 
+eg  //@state
+    let dat  = null
+    dat = valu.name.valu
