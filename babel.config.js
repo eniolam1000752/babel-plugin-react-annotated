@@ -1,4 +1,4 @@
-const env = "test";
+const env = "prod";
 
 if (env === "test") {
   module.exports = function(api) {

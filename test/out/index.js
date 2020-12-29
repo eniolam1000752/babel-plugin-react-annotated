@@ -39,10 +39,10 @@ const useestComponent = function () {
   }
 
   const initialization = data => {
-    SET__state3(_RN_6618017 => {
-      _RN_6618017 = JSON.parse(JSON.stringify(_RN_6618017));
-      _RN_6618017.state3[0].number = ++state2.value;
-      return _RN_6618017;
+    SET__state3(_RN_05574204 => {
+      _RN_05574204 = JSON.parse(JSON.stringify(_RN_05574204));
+      _RN_05574204.state3[0].number = ++state2.value;
+      return _RN_05574204;
     });
   };
 
@@ -50,27 +50,22 @@ const useestComponent = function () {
     initialization(_state3, 89, 'eniola');
   }, []);
   React.useEffect(() => {
-    SET__state1(_RN_6618017 => {
-      _RN_6618017 = JSON.parse(JSON.stringify(_RN_6618017));
-      _RN_6618017.state1 = {
+    SET__state1(_RN_05574204 => {
+      _RN_05574204 = JSON.parse(JSON.stringify(_RN_05574204));
+      _RN_05574204.state1 = {
         val: 90
       };
-      return _RN_6618017;
+      return _RN_05574204;
     });
   }, []);
   return React.createElement(React.Fragment, null, React.createElement("div", null, React.createElement("div", null, state2), React.createElement("div", {
     onMouseDown: () => {}
   }, state3), React.createElement("div", {
     onClick: function () {
-      SET__state2(_RN_883031 => {
-        _RN_883031 = JSON.parse(JSON.stringify(_RN_883031));
-        _RN_883031.state2[0] = state3.val;
-        SET__state1(_RN_7324045 => {
-          _RN_7324045 = JSON.parse(JSON.stringify(_RN_7324045));
-          _RN_7324045.state1 = _RN_883031.state2[0];
-          return _RN_7324045;
-        });
-        return _RN_883031;
+      SET__state1(_RN_05574204 => {
+        _RN_05574204 = JSON.parse(JSON.stringify(_RN_05574204));
+        _RN_05574204.state1 = state3.val;
+        return _RN_05574204;
       });
     }
   })));
